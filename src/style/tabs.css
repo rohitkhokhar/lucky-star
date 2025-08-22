@@ -1,0 +1,190 @@
+.wallet_tabs {
+    padding-top: 8px;
+    padding-bottom: 24px;
+}
+
+.light .tabs_main {
+    background: #f1f2f6
+}
+
+.light .tabs_main .select_bg {
+    background: #000000d9
+}
+
+.light .tabs_main .tabs:after {
+    background: #afb4c6
+}
+
+.light .tabs_main .tabs.select {
+    color: #fff
+}
+
+.dark .tabs_main {
+    background: #0f171b
+}
+
+.dark .tabs_main .select_bg {
+    background: #fcb131
+}
+
+.dark .tabs_main .tabs:after {
+    background: #10131b
+}
+
+.dark .tabs_main .tabs.select {
+    color: #000
+}
+
+.tabs_box {
+    width: 100%
+}
+
+.tabs_box::-webkit-scrollbar {
+    width: 5px;
+    height: 4px
+}
+
+.tabs_box::-webkit-scrollbar-thumb {
+    background-color: #0003;
+    border-radius: 4px
+}
+
+.tabs_box::-webkit-scrollbar-track:hover {
+    background-color: transparent
+}
+
+.tabs_box::-webkit-scrollbar-thumb:hover {
+    background-color: #0003
+}
+
+.tabs_main {
+    width: max-content;
+    height: 32px;
+    border-radius: 10px;
+    font-size: 12px;
+    position: relative;
+    color: #afb4c6;
+    display: flex
+}
+
+.tabs_main.flex_css {
+    width: 100%
+}
+
+.tabs_main.flex_css .tabs {
+    flex: 1 1
+}
+
+.tabs_main.noLine .tabs:after {
+    display: none
+}
+
+.tabs_main .tabs {
+    position: relative;
+    min-width: 65px;
+    padding: 0 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all .4s
+}
+
+.tabs_main .tabs .tab_text {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    line-height: 32px
+}
+
+.tabs_main .tabs .tab_text .red_dot {
+    width: 16px;
+    height: 16px;
+    background: #ff2045;
+    border-radius: 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 10px;
+    color: #fff;
+    margin-left: 6px;
+}
+
+.tabs_main .tabs:after {
+    content: "";
+    width: 1px;
+    height: 12px;
+    position: absolute;
+    right: -.5px;
+    top: 50%;
+    transform: translateY(-50%)
+}
+
+.tabs_main .tabs:last-child:after {
+    display: none
+}
+
+.tabs_main .select_bg {
+    width: 125px;
+    height: 32px;
+    position: absolute;
+    left: 0;
+    top: 0;
+    border-radius: 10px;
+    transition: all .4s;
+    z-index: 1
+}
+
+.phone .tabs_main {
+    height: 8.5vw;
+    border-radius: 2.66vw;
+    font-size: 3.2vw
+}
+
+.phone .tabs_main .tabs {
+    min-width: 7.46vw;
+    padding: 0 2.66vw
+}
+
+.phone .tabs_main .tabs:after {
+    width: .26vw;
+    height: 3.2vw;
+    right: -.13vw
+}
+
+.phone .tabs_main .tabs .tab_text {
+    line-height: 8.5vw
+}
+
+.phone .tabs_main .select_bg {
+    height: 8.5vw;
+    border-radius: 2.66vw
+}
+
+@media screen and (min-width: 500px) and (max-width: 1233px) {
+    .phone .tabs_main {
+        height: 2.28rem;
+        border-radius: .71rem;
+        font-size: .85rem
+    }
+
+    .phone .tabs_main .tabs {
+        min-width: 2rem;
+        padding: 0 .71rem
+    }
+
+    .phone .tabs_main .tabs:after {
+        width: .07rem;
+        height: .85rem;
+        right: -.03rem
+    }
+
+    .phone .tabs_main .tabs .tab_text {
+        line-height: 2.28rem
+    }
+
+    .phone .tabs_main .select_bg {
+        height: 2.28rem;
+        border-radius: .71rem
+    }
+}

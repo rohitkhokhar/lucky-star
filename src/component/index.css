@@ -1,0 +1,7 @@
+.header-fixed {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  z-index: 50;
+  /* Ensure it stays on top */
+}

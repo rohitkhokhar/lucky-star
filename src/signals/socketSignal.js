@@ -1,0 +1,60 @@
+import io from "socket.io-client";
+
+let peerConnection;
+const config = {
+  iceServers: [
+    {
+      "urls": "stun:stun.l.google.com:19302",
+    },
+    // {
+    //   "urls": "turn:TURN_IP?transport=tcp",
+    //   "username": "TURN_USERNAME",
+    //   "credential": "TURN_CREDENTIALS"
+    // }
+  ]
+};
+
+const socket = io.connect('https://llive-stream.liveluckystar.com/');
+
+socket.on("offer", (id, description) => {
+  peerConnection = new RTCPeerConnection(config);
+  peerConnection
+    .setRemoteDescription(description)
+    .then(() => peerConnection.createAnswer())
+    .then(sdp => peerConnection.setLocalDescription(sdp))
+    .then(() => {
+      socket.emit("answer", id, peerConnection.localDescription);
+    });
+  peerConnection.ontrack = event => {
+    console.log('event: ', event);
+    // video.srcObject = event.streams[0];
+  };
+  peerConnection.onicecandidate = event => {
+    if (event.candidate) {
+      socket.emit("candidate", id, event.candidate);
+    }
+  };
+});
+
+
+socket.on("candidate", (id, candidate) => {
+  peerConnection
+    .addIceCandidate(new RTCIceCandidate(candidate))
+    .catch(e => console.error(e));
+});
+
+socket.on("connect", () => {
+  console.log("connect: 11");
+  socket.emit("watcher");
+});
+
+socket.on("broadcaster", () => {
+  socket.emit("watcher");
+});
+
+window.onunload = window.onbeforeunload = () => {
+  socket.close();
+  peerConnection.close();
+};
+
+export default socket;

@@ -1,0 +1,315 @@
+
+socket url =  http://13.127.86.242:3000/chooseServer?device_type=android 
+
+
+
+==>>USer Login flow discription:
+    1)First User OTP send use "SEND_OTP" event after send OTP same screen OTP and username and all details take and send "SINGUP" event and get dashboard event response.
+    2)If user already register then user use login flow
+        ->In login user send first OTP send use "SEND_OTP" event after send OTP.
+        ->User need to send LOGIN event in login user send mobile_number and otp
+        ->Get LOGIN event response dashboard event response
+    3)Display dashboard.
+    4)For LIve game info send "
+
+    5)LIVE_GAME_INFO handle discription : 
+    
+        =>handle game_state;
+            List of state
+                new_game,
+                round_start,
+                set_joker,
+                start_round_first_bet,
+                no_more_first_bet,
+                start_round_second_bet,
+                no_more_second_bet,
+                start_round_third_bet,
+                no_more_third_bet,
+                winner,
+                round_end,
+                game_stop
+
+
+        new_game : If new server create then game this state.
+        round_start : If master user start then get this state with LIVE_GAME_START_ROUND event.
+        set_joker : After round start master set jocker then get this state with LIVE_GAME_SET_JOKER event.
+        start_round_first_bet  :after set jocket master user set start first round bet then get this state with LIVE_GAME_BET_START event.
+        no_more_first_bet  :after set all user bet some time then master user set no more bet for first round then get this state with LIVE_GAME_NO_MORE_BET event.
+        start_round_second_bet  :if no win card get in first round then  master user set start second round bet then get this state with LIVE_GAME_BET_START event.
+        no_more_second_bet  :after set all user bet some time then master user set no more bet for second round then get this state with LIVE_GAME_NO_MORE_BET event.
+        start_round_third_bet  :if no win card get in second round then  master user set start third_ round bet then get this state with LIVE_GAME_BET_START event.
+        no_more_third_bet  :after set all user bet some time then master user set no more bet for third_- round then get this state with LIVE_GAME_NO_MORE_BET event.
+        winner : If any round get win cards send master user set winner for round then get this state with "LIVE_GAME_WINNER"
+        round_end : after round win then get this state with "LIVE_GAME_END_ROUND" event.
+
+        after round end master user need to start new round with "LIVE_GAME_START_ROUND" this event.
+
+        
+        =>Above all state related all event response get auto to user while master user set.
+
+
+==>User Login : 
+    1)OTP Send :-
+        Request : 
+            {
+                "en" : "SEND_OTP",
+                "data" : {
+                    "mobile_number" : "8128934416"
+                }
+            }
+        Response(Error): 
+            {
+                "err": true,
+                "msg": "User not found!",
+                "errcode": "0006",
+                "en": "SEND_OTP",
+                "data": {
+                    "mobile_number" : "8128934416"
+                },
+                "title": "Error!",
+                "sendTime": "2025-03-13T06:31:00.303Z"
+            }
+        Response(Success): 
+            {
+                "err": false,
+                "msg": "Data delivered successfully.!!",
+                "errcode": "0000",
+                "en": "SEND_OTP",
+                "data": {
+                    "mobile_number": "8128934416",
+                    "status": true
+                },
+                "title": "Alert",
+                "sendTime": "2025-03-13T11:41:48.366Z"
+            }
+    2)User-Singup :-
+        Request : 
+            {
+                "en" : "SINGUP",
+                "data" : {
+                    "mobile_number" : "8128934416",
+                    "user_name" : "ashvin",
+                    "full_name" : "sankhat ashvin",
+                    "otp" : "166549"
+                }
+            }
+        Response(Error): 
+            {
+                "err": true,
+                "msg": "Your Mobile Number not-registered!",
+                "errcode": "0006",
+                "en": "SIGNUP",
+                "data": {
+                    "mobile_number": "8128934415",
+                    "user_name": "ashvin",
+                    "full_name": "sankhat ashvin",
+                    "otp": "166549"
+                },
+                "title": "Error!",
+                "sendTime": "2025-03-13T12:33:36.942Z"
+            }
+        Response(Success): 
+            {
+                "err": false,
+                "msg": "Data delivered successfully.!!",
+                "errcode": "0000",
+                "en": "AppLunchDetails",
+                "data": {
+                    "_id": "67d2d1e47e4d791730bf79a4",
+                    "full_name": "sankhat ashvin",
+                    "user_name": "ashvin",
+                    "profile_url": "image_avatar/avatar_1.png",
+                    "unique_id": "Rummy_0000000002",
+                    "chips": 0,
+                    "bonus": 0,
+                    "signup_bonus": 0,
+                    "game_winning": 0
+                },
+                "title": "Alert",
+                "sendTime": "2025-03-13T12:39:01.020Z"
+            }
+    3)User-Login :-
+        Request : 
+            {
+                "en" : "LOGIN",
+                "data" : {
+                    "mobile_number" : "8128934416",
+                    "otp" : "166549"
+                }
+            }
+        Response(Error): 
+            {
+                "err": true,
+                "msg": "Your Mobile Number not-registered!",
+                "errcode": "0006",
+                "en": "SIGNUP",
+                "data": {
+                    "mobile_number": "8128934415"
+                },
+                "title": "Error!",
+                "sendTime": "2025-03-13T12:33:36.942Z"
+            }
+        Response(Success): 
+            {
+                "err": false,
+                "msg": "Data delivered successfully.!!",
+                "errcode": "0000",
+                "en": "AppLunchDetails",
+                "data": {
+                    "_id": "67d2d1e47e4d791730bf79a4",
+                    "full_name": "sankhat ashvin",
+                    "user_name": "ashvin",
+                    "profile_url": "image_avatar/avatar_1.png",
+                    "unique_id": "Rummy_0000000002",
+                    "chips": 0,
+                    "bonus": 0,
+                    "signup_bonus": 0,
+                    "game_winning": 0
+                },
+                "title": "Alert",
+                "sendTime": "2025-03-14T03:54:59.700Z"
+            }
+    4)Live Game Info :-
+        Request : 
+            {
+                "en" : "LIVE_GAME_INFO",
+                "data" : {
+                }
+            }
+        Response(Error): 
+            {
+                "err": true,
+                "msg": "Your Mobile Number not-registered!",
+                "errcode": "0006",
+                "en": "LIVE_GAME_INFO",
+                "data": {
+                    "mobile_number": "8128934415"
+                },
+                "title": "Error!",
+                "sendTime": "2025-03-13T12:33:36.942Z"
+            }
+        Response(Success): 
+            {
+                "err": false,
+                "msg": "Data delivered successfully.!!",
+                "errcode": "0000",
+                "en": "LIVE_GAME_INFO",
+                "data": {
+                    "_id": "67d3ab1e6fe9cc456424c78f",
+                    "game_id": "",
+                    "game_state": "new_game",
+                    "game_type": "live_game",
+                    "bet_no": "",
+                    "center_card": "",
+                    "two_cards": [],
+                    "user_total_bet_amount": 0,
+                    "total_bet_amount": 0,
+                    "winners": 0,
+                    "win_card": "",
+                    "win_side": "",
+                    "winner_users": [],
+                    "last_win_cards": [],
+                    "next_deal_time": "",
+                    "user_joins": [],
+                    "join_robots": [],
+                    "createdAt": "2025-03-14T04:05:50.647Z",
+                    "updatedAt": "2025-03-14T04:05:50.647Z",
+                    "__v": 0,
+                    "total_bet": 0,
+                    "user_total_bet": 0,
+                    "win": 0,
+                    "take": false,
+                    "auto_claim": false,
+                    "timer": 0,
+                    "total_wallet": 0,
+                    "win_config": {
+                        "first_bet": 25,
+                        "second_bet": 50,
+                        "third_bet": 100
+                    }
+                },
+                "title": "Alert",
+                "sendTime": "2025-03-14T04:23:18.331Z"
+            }
+    5)User Bet :-
+        Request : 
+            {
+                "en" : "LIVE_GAME_PLACE_BET",
+                "data" : {
+                    "card_details" : {
+                        "andar":100
+                    }
+                }
+            }
+            {
+                "en" : "LIVE_GAME_PLACE_BET",
+                "data" : {
+                    "card_details" : {
+                        "bahar":100
+                    }
+                }
+            }
+        Response(Error): 
+            {
+                "err": true,
+                "msg": "Your Mobile Number not-registered!",
+                "errcode": "0006",
+                "en": "LIVE_GAME_PLACE_BET",
+                "data": {
+                    "mobile_number": "8128934415"
+                },
+                "title": "Error!",
+                "sendTime": "2025-03-13T12:33:36.942Z"
+            }
+        Response(Success): 
+           
+     5)User Bet History :-
+        Request :- LIVE_GAME_GAME_HISTORY  
+
+1.game play history	 : LIVE_GAME_GAME_HISTORY  use this event.
+2.result history : mate "LIVE_GAME_INFO" aa event call karo j cho to ema "last_win_cards" key ma last 60 record avse. 
+    and round finish thai to "last_win_cards" key "LIVE_GAME_END_ROUND" event ma avse
+3.winning ammount and  win thayo hoi ae user ne batavanu che
+    mate user ne win karse to "LIVE_GAME_ROUND_WIN" event avse and lose karse to LIVE_GAME_ROUND_LOSE event avse.
+
+
+
+server {
+    server_name liveluckystar.com www.liveluckystar.com;
+
+    location / {
+        proxy_pass http://localhost:3000;  # Vite app running via PM2
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/liveluckystar.com/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/liveluckystar.com/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
+
+}
+
+server {
+    if ($host = www.liveluckystar.com) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+ if ($host = liveluckystar.com) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+
+    listen 80;
+    server_name liveluckystar.com www.liveluckystar.com;
+    return 404; # managed by Certbot
+
+
+
+
+}
