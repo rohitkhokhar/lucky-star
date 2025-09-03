@@ -33,15 +33,15 @@ function Box3({ data, isResult }) {
                   : "bg-[#313131] border-[#4F4F4F]"
               } ${
                 value === "bahar"
-                  ? "w-[20px] h-[20px] sm:w-[12px] sm:h-[12px] lg:w-[36px] lg:h-[36px]"
-                  : "w-[10px] h-[10px] sm:w-[12px] sm:h-[12px] lg:w-[20px] lg:h-[20px]"
-              }`}
-              style={{
-                fontSize:
-                  value === "bahar"
-                    ? "0.5rem" // red dots text size
-                    : "0.5rem", // black dots text size
-              }}
+                  ? "w-[10px] h-[10px] sm:w-[12px] sm:h-[12px] lg:w-[30px] lg:h-[30px]"
+                  : "w-[10px] h-[10px] sm:w-[12px] sm:h-[12px] lg:w-[30px] lg:h-[30px]"
+              } text-[0.5rem] sm:text-[0.5rem] lg:text-[0.9rem]`}
+              // style={{
+              //   fontSize:
+              //     value === "bahar"
+              //       ? "0.5rem" // red dots text size
+              //       : "0.5rem", // black dots text size
+              // }}
             >
               {value === "bahar" ? "B" : "A"}
             </div>

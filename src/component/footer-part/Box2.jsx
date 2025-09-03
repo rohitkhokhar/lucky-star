@@ -24,19 +24,19 @@ const formatNumber = (num, maxValue = null) => {
     }
   }
 
-  if (number >= 1000) {
-    const thousands = number / 1000;
-    // Split into integer and decimal parts
-    const parts = thousands.toString().split(".");
+  // if (number >= 1000) {
+  //   const thousands = number / 1000;
+  //   // Split into integer and decimal parts
+  //   const parts = thousands.toString().split(".");
 
-    if (parts.length === 1 || parts[1] === "0") {
-      // No decimal part or it's .0
-      return `${parts[0]}k`;
-    } else {
-      // Show exact decimal digits without rounding
-      return `${parts[0]}.${parts[1].substring(0, 1)}k`;
-    }
-  }
+  //   if (parts.length === 1 || parts[1] === "0") {
+  //     // No decimal part or it's .0
+  //     return `${parts[0]}k`;
+  //   } else {
+  //     // Show exact decimal digits without rounding
+  //     return `${parts[0]}.${parts[1].substring(0, 1)}k`;
+  //   }
+  // }
 
   return number.toString();
 };
@@ -131,7 +131,7 @@ function Box2({
             <div className="z-10 p-2 sm:p-1 text-white font-bold sm:text-[10px] lg:text-[24px]">
               <span>ANDAR</span>
               {data?.total_bet_on_cards?.andar && (
-                <div className="z-10 pt-2 transform -translate-y-1/2 flex flex-col">
+                <div className="z-10 pt-2 transform -translate-y-1/2 flex flex-col" style={{ paddingTop: "26px" }}>
                   <span className="text-white font-bold sm:text-[6px] lg:text-[14px]">
                     Live Bets-{formatNumber(totalBetAndarBahar?.andar || 0)}
                   </span>
@@ -170,7 +170,7 @@ function Box2({
             <div className="z-10 p-2 sm:p-1 text-white font-bold sm:text-[10px] lg:text-[24px]">
               <span>BAHAR</span>
               {data?.total_bet_on_cards?.bahar && (
-                <div className="z-10 pt-2 transform -translate-y-1/2 flex flex-col">
+                <div className="z-10 pt-2 transform -translate-y-1/2 flex flex-col" style={{ paddingTop: "26px" }}>
                   <span className="text-white font-bold sm:text-[6px] lg:text-[14px]">
                     Live Bets-{formatNumber(totalBetAndarBahar?.bahar || 0)}
                   </span>
@@ -179,30 +179,19 @@ function Box2({
             </div>
           </div>
 
-          {/* Coins on bet areas */}
           {coinPositions.map((pos, index) => (
             <div
               key={index}
-              className={`absolute flex flex-col justify-center items-center ${
-                pos.position === "andar"
-                  ? "top-[10%] left-[50%]"
-                  : "bottom-[5%] left-[50%]"
-              } transform -translate-x-1/2`}
+              className={`coin-container ${pos.position === "andar" ? "top-[17%] left-[53%]" : "bottom-[10%] left-[53%]"
+                }`}
             >
-              <img
-                src={pos.coin.image}
-                alt={pos.coin.value}
-                className="lg:w-[40px] lg:h-[40px] sm:w-[25px] sm:h-[25px] z-20"
-              />
-              <div
-                className="absolute text-black font-bold text-[12px] lg:text-[16px] z-30"
-                style={{
-                  color: pos.coin.isBlackBackground ? "white" : "black",
-                  fontSize: "8px"
-                }}
-              >
-                {formatNumber(pos.totalValue, total_wallet || userBalance)}
+              <div className="relative flex items-center justify-center">
+                <img src={pos.coin.image} alt={pos.coin.value} className="coin-image" />
+                <span className="coin-symbol">₹</span>
               </div>
+              <p className="coin-value">
+                {formatNumber(pos.totalValue, total_wallet || userBalance)}
+              </p>
             </div>
           ))}
         </div>

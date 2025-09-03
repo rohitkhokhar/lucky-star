@@ -2,6 +2,60 @@
     animation: fade-in 0.3s ease-out;
 }
 
+.coin-container {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    border-radius: 9999px;
+    border: 0.5px solid white;
+    background: transparent;
+    padding: 1px 3px;
+    gap: 1.5px;
+    transform: translateX(-50%);
+    pointer-events: none;
+    /* ⬅️ makes the entire coin + amount unclickable */
+}
+
+.coin-image {
+    width: 13px;
+    height: 13px;
+}
+
+@media (min-width: 1024px) {
+    .coin-image {
+        width: 24px;
+        height: 24px;
+    }
+}
+
+.coin-symbol {
+    position: absolute;
+    font-weight: bold;
+    color: black;
+    font-size: 8px;
+    pointer-events: none;
+    /* ⬅️ ensure symbol doesn’t intercept clicks */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.coin-value {
+    font-weight: bold;
+    color: white;
+    font-size: 6px;
+    line-height: 8px;
+    pointer-events: none;
+    /* ⬅️ ensure amount doesn’t intercept clicks */
+}
+
+@media (min-width: 1024px) {
+    .coin-value {
+        font-size: 14px;
+    }
+}
+
+
 @keyframes fade-in {
     from {
         opacity: 0;

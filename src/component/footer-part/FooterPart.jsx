@@ -582,7 +582,7 @@ function FooterPart() {
         localStorage.setItem("total_wallet", JSON.stringify(newBalance));
       }
 
-      setBtnDisabled(true);
+      // setBtnDisabled(true);
 
       let message = "Bet Placed: ";
       if (andarBet > 0) message += `Andar ₹${andarBet} `;
