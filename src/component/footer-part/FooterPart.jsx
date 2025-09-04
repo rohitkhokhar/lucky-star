@@ -32,7 +32,7 @@ function FooterPart() {
   const [toastType, setToastType] = useState("info");
   const [data, setData] = useState({
     user_total_bet: 0
-  });  
+  });
   const [toastKey, setToastKey] = useState(0);
   const [announcement, setAnnouncement] = useState("");
   const [showAnnouncement, setShowAnnouncement] = useState(false);
@@ -48,6 +48,12 @@ function FooterPart() {
     second: { andar: 0, bahar: 0 },
     third: { andar: 0, bahar: 0 },
   });
+  const [pendingBets, setPendingBets] = useState({
+    first: { andar: 0, bahar: 0 },
+    second: { andar: 0, bahar: 0 },
+    third: { andar: 0, bahar: 0 },
+  });
+  const [coinHistory, setCoinHistory] = useState([]); 
 
   const coins =
     data?.bet_slots?.map((value, index) => ({
@@ -110,99 +116,6 @@ function FooterPart() {
       socket.off("res", handleUpdatedWallet);
     };
   }, []);
-  
-  useEffect(() => {
-    const socket = getSocket();
-    if (!socket) return;
-
-    const handleNoMoreBet = (response) => {
-      if (response.err) {
-        console.error(`Error from server: ${response.msg}`);
-        return;
-      }
-
-      const { en, data } = response;
-
-      if (en === "LIVE_GAME_NO_MORE_BET") {
-        // Determine current round from server data
-        const roundKey = data.bet_no.includes("first")
-          ? "first"
-          : data.bet_no.includes("second")
-          ? "second"
-          : "third";
-
-        // Only auto-bet if in betting state and user hasn't manually placed bet
-        if (
-          (gameState === "start_round_first_bet" ||
-            gameState === "start_round_second_bet" ||
-            gameState === "start_round_third_bet") &&
-          !hasPlacedBet
-        ) {
-          // Use the same logic as placeBet function
-          const andarBet = roundBets[roundKey]?.andar || 0;
-          const baharBet = roundBets[roundKey]?.bahar || 0;
-          const totalBet = andarBet + baharBet;
-
-          // Same validation as placeBet
-          if (totalBet > userBalance) {
-            setToastMessage("Insufficient balance!");
-            setToastType("error");
-            setToastKey((prev) => prev + 1);
-            return;
-          }
-
-          if (andarBet > 0 || baharBet > 0) {
-            // Same payload structure as placeBet
-            const payload = {
-              card_details: {
-                ...(andarBet > 0 && { andar: andarBet }),
-                ...(baharBet > 0 && { bahar: baharBet }),
-              },
-            };
-
-            sendEvent("LIVE_GAME_PLACE_BET", payload);
-
-            // Same balance update as placeBet
-            if (user) {
-              const newBalance = user.chips - totalBet;
-              user.chips = newBalance;
-              setUserBalance(newBalance);
-              localStorage.setItem("user", JSON.stringify(user));
-              localStorage.setItem("total_wallet", JSON.stringify(newBalance));
-            }
-
-            // Same bet tracking as placeBet
-            setBetAmounts((prev) => ({
-              ...prev,
-              [roundKey]: totalBet,
-            }));
-
-            setToastMessage(
-              `Auto-placed: ${andarBet > 0 ? `Andar ₹${andarBet} ` : ""}${
-                baharBet > 0 ? `Bahar ₹${baharBet}` : ""
-              }`
-            );
-            setToastType("success");
-            setHasPlacedBet(true);
-            setBtnDisabled(true);
-          }
-        }
-
-        setToastMessage(
-          `${data.bet_no.replace(/_/g, " ").toUpperCase()} round closed`
-        );
-        setToastType("info");
-        setGameState(data.game_state);
-        setToastKey((prev) => prev + 1);
-      }
-    };
-
-    socket.on("res", handleNoMoreBet);
-
-    return () => {
-      socket.off("res", handleNoMoreBet);
-    };
-  }, [roundBets, userBalance, user, gameState, hasPlacedBet]);
 
   useEffect(() => {
     const socket = getSocket();
@@ -294,13 +207,7 @@ function FooterPart() {
           setCoinPositions([]);
           localCoinPositions = [];
           setHasPlacedBet(false);
-          setRoundBets({
-            first: { andar: 0, bahar: 0 },
-            second: { andar: 0, bahar: 0 },
-            third: { andar: 0, bahar: 0 },
-          });
-          setBetAmounts({ first: 0, second: 0, third: 0 }); // Reset all bet amounts
-          // Reset user_total_bet to 0 when round starts
+          setBetAmounts({ first: 0, second: 0, third: 0 });
           setData(prev => ({ ...prev, user_total_bet: 0 }));
           setToastKey((prev) => prev + 1);
           break;
@@ -374,6 +281,7 @@ function FooterPart() {
             second: { andar: 0, bahar: 0 },
             third: { andar: 0, bahar: 0 },
           });
+          setCoinHistory([]);
           setToastKey((prev) => prev + 1);
           break;
 
@@ -447,6 +355,14 @@ function FooterPart() {
         gameState === "start_round_second_bet" ||
         gameState === "start_round_third_bet")
     ) {
+      const roundKey =
+        gameState === "start_round_first_bet"
+          ? "first"
+          : gameState === "start_round_second_bet"
+          ? "second"
+          : "third";
+  
+      // Track in visual state
       setCoinPositions((prev) => {
         const existing = prev.find((pos) => pos.position === position);
         if (existing) {
@@ -462,42 +378,22 @@ function FooterPart() {
           ];
         }
       });
-
-      // Update local cache
-      localCoinPositions = localCoinPositions.map((pos) =>
-        pos.position === position
-          ? { ...pos, totalValue: pos.totalValue + selectedCoin.value }
-          : pos
-      );
-
-      if (!localCoinPositions.find((pos) => pos.position === position)) {
-        localCoinPositions.push({
-          coin: selectedCoin,
-          position,
-          totalValue: selectedCoin.value,
-        });
-      }
-
-      // Update roundBets
-      const roundKey =
-        gameState === "start_round_first_bet"
-          ? "first"
-          : gameState === "start_round_second_bet"
-          ? "second"
-          : "third";
-
-      setRoundBets((prev) => ({
+      setPendingBets((prev) => ({
         ...prev,
         [roundKey]: {
           ...prev[roundKey],
           [position]: (prev[roundKey][position] || 0) + selectedCoin.value,
         },
       }));
+      setCoinHistory((prev) => [
+        ...prev,
+        { position, value: selectedCoin.value, roundKey },
+      ]);
     } else {
       setToastMessage("Betting is not allowed at this stage.");
       setToastType("error");
-      setToastKey((prev) => prev + 1);
     }
+    setToastKey((prev) => prev + 1);
   };
 
   const handleUndo = () => {
@@ -506,16 +402,37 @@ function FooterPart() {
       gameState === "start_round_second_bet" ||
       gameState === "start_round_third_bet"
     ) {
-      setCoinPositions([]);
-      localCoinPositions = [];
-      setToastMessage("All bets have been undone.");
-      setToastType("success");
+      if (coinHistory.length === 0) {
+        setToastMessage("No coins to undo.");
+        setToastType("error");
+        setToastKey((prev) => prev + 1);
+        return;
+      }
+      const lastCoin = coinHistory[coinHistory.length - 1];
+      setPendingBets((prev) => ({
+        ...prev,
+        [lastCoin.roundKey]: {
+          ...prev[lastCoin.roundKey],
+          [lastCoin.position]:
+            (prev[lastCoin.roundKey][lastCoin.position] || 0) - lastCoin.value,
+        },
+      }));
+      setCoinPositions((prev) =>
+        prev
+          .map((pos) =>
+            pos.position === lastCoin.position
+              ? { ...pos, totalValue: pos.totalValue - lastCoin.value }
+              : pos
+          )
+          .filter((pos) => pos.totalValue > 0)
+      );
+      setCoinHistory((prev) => prev.slice(0, -1));
     } else {
       setToastMessage("Cannot undo bets at this stage.");
       setToastType("error");
     }
     setToastKey((prev) => prev + 1);
-  };
+  };  
 
   const calculateTotalBet = (type) => {
     return coinPositions
@@ -535,17 +452,37 @@ function FooterPart() {
       return;
     }
 
-    // Determine current round
+    // Figure out round
     const roundKey =
       gameState === "start_round_first_bet"
         ? "first"
         : gameState === "start_round_second_bet"
-        ? "second"
-        : "third";
+          ? "second"
+          : "third";
 
-    const andarBet = roundBets[roundKey]?.andar || 0;
-    const baharBet = roundBets[roundKey]?.bahar || 0;
+    let andarBet = pendingBets[roundKey]?.andar || 0;
+    let baharBet = pendingBets[roundKey]?.bahar || 0;
+
+    // ✅ If no bets in current round, but previous round has carry-forward
+    if (andarBet === 0 && baharBet === 0) {
+      const lastRound =
+        roundKey === "second" ? "first" :
+          roundKey === "third" ? "second" : null;
+
+      if (lastRound) {
+        andarBet = pendingBets[lastRound]?.andar || 0;
+        baharBet = pendingBets[lastRound]?.bahar || 0;
+      }
+    }
+
     const totalBet = andarBet + baharBet;
+
+    if (totalBet <= 0) {
+      setToastMessage("No bets placed! Please select coins.");
+      setToastType("error");
+      setToastKey((prev) => prev + 1);
+      return;
+    }
 
     if (totalBet > userBalance) {
       setToastMessage("Insufficient balance!");
@@ -554,48 +491,50 @@ function FooterPart() {
       return;
     }
 
-    if (andarBet > 0 || baharBet > 0) {
-      // Prepare the payload with card_details
-      const payload = {
-        card_details: {
-          ...(andarBet > 0 && { andar: andarBet }),
-          ...(baharBet > 0 && { bahar: baharBet }),
-        },
-      };
+    // Prepare payload
+    const payload = {
+      card_details: {
+        ...(andarBet > 0 && { andar: andarBet }),
+        ...(baharBet > 0 && { bahar: baharBet }),
+      },
+    };
 
-      sendEvent("LIVE_GAME_PLACE_BET", payload);
+    sendEvent("LIVE_GAME_PLACE_BET", payload);
 
-      // Update the specific bet amount based on current round
-      setBetAmounts((prev) => ({
-        ...prev,
-        [roundKey]: totalBet,
-      }));
+    // Update round bet amounts
+    setBetAmounts((prev) => ({
+      ...prev,
+      [roundKey]: totalBet,
+    }));
 
-      // Update user balance immediately
-      const newBalance = userBalance - totalBet;
-      setUserBalance(newBalance);
+    // Update user balance immediately
+    const newBalance = userBalance - totalBet;
+    setUserBalance(newBalance);
 
-      // Update local storage if user exists
-      if (user) {
-        const updatedUser = { ...user, chips: newBalance };
-        localStorage.setItem("user", JSON.stringify(updatedUser));
-        localStorage.setItem("total_wallet", JSON.stringify(newBalance));
-      }
-
-      // setBtnDisabled(true);
-
-      let message = "Bet Placed: ";
-      if (andarBet > 0) message += `Andar ₹${andarBet} `;
-      if (baharBet > 0) message += `Bahar ₹${baharBet}`;
-
-      setToastMessage(message.trim());
-      setToastType("success");
-      setSelectedCoin(null);
-      setHasPlacedBet(true);
-    } else {
-      setToastMessage("No bets placed! Please select coins.");
-      setToastType("error");
+    if (user) {
+      const updatedUser = { ...user, chips: newBalance };
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+      localStorage.setItem("total_wallet", JSON.stringify(newBalance));
     }
+
+    // ✅ Clear pending bets for this round (carry-forward done)
+    setPendingBets((prev) => ({
+      ...prev,
+      [roundKey]: { andar: 0, bahar: 0 },
+    }));
+
+    // Clear visual coins
+    // setCoinPositions([]);
+    // localCoinPositions = [];
+
+    let message = "Bet Placed: ";
+    if (andarBet > 0) message += `Andar ₹${andarBet} `;
+    if (baharBet > 0) message += `Bahar ₹${baharBet}`;
+
+    setToastMessage(message.trim());
+    setToastType("success");
+    setSelectedCoin(null);
+    setHasPlacedBet(true);
     setToastKey((prev) => prev + 1);
   };
 
