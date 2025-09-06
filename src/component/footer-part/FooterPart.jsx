@@ -208,15 +208,15 @@ function FooterPart() {
           localCoinPositions = [];
           setHasPlacedBet(false);
           setBetAmounts({ first: 0, second: 0, third: 0 });
-          setData(prev => ({ ...prev, user_total_bet: 0 }));
+          setData(prev => ({ ...prev, user_total_bet: 0, total_bet_on_cards: {} }));
           setToastKey((prev) => prev + 1);
           break;
 
         case "LIVE_GAME_PLACE_BET_INFO":
-          const { andar, bahar } = data.total_bet_on_cards;
-          // Update user_total_bet with sum of andar and bahar
+          const { andar = 0, bahar = 0 } = data.total_bet_on_cards || {};
           setData(prev => ({
             ...prev,
+            total_bet_on_cards: data.total_bet_on_cards,
             user_total_bet: andar + bahar
           }));
           break;
@@ -408,7 +408,18 @@ function FooterPart() {
         setToastKey((prev) => prev + 1);
         return;
       }
+
       const lastCoin = coinHistory[coinHistory.length - 1];
+
+      if (lastCoin.confirmed) {
+        // 🚫 Can't undo confirmed coins (already placed in bet)
+        setToastMessage("You cannot undo a confirmed bet.");
+        setToastType("error");
+        setToastKey((prev) => prev + 1);
+        return;
+      }
+
+      // ✅ Undo only pending (unconfirmed) coins
       setPendingBets((prev) => ({
         ...prev,
         [lastCoin.roundKey]: {
@@ -417,6 +428,7 @@ function FooterPart() {
             (prev[lastCoin.roundKey][lastCoin.position] || 0) - lastCoin.value,
         },
       }));
+
       setCoinPositions((prev) =>
         prev
           .map((pos) =>
@@ -426,13 +438,14 @@ function FooterPart() {
           )
           .filter((pos) => pos.totalValue > 0)
       );
+
       setCoinHistory((prev) => prev.slice(0, -1));
     } else {
       setToastMessage("Cannot undo bets at this stage.");
       setToastType("error");
+      setToastKey((prev) => prev + 1);
     }
-    setToastKey((prev) => prev + 1);
-  };  
+  };
 
   const calculateTotalBet = (type) => {
     return coinPositions
@@ -536,6 +549,9 @@ function FooterPart() {
     setSelectedCoin(null);
     setHasPlacedBet(true);
     setToastKey((prev) => prev + 1);
+    setCoinHistory((prev) =>
+      prev.map((coin) => ({ ...coin, confirmed: true }))
+    );    
   };
 
   const totalBet = coinPositions.reduce((sum, pos) => sum + pos.totalValue, 0);
