@@ -75,6 +75,7 @@ function Box2({
       const { en, data } = response;
 
       if (en === "LIVE_GAME_PLACE_BET_INFO") {
+        console.log("LIVE_GAME_PLACE_BET_INFO data:", data);
         setTotalBetAndarBahar(data?.total_bet_on_cards);
       }
     };
@@ -131,7 +132,10 @@ function Box2({
             <div className="z-10 p-2 sm:p-1 text-white font-bold sm:text-[10px] lg:text-[24px]">
               <span>ANDAR</span>
               {data?.total_bet_on_cards?.andar && (
-                <div className="z-10 pt-2 transform -translate-y-1/2 flex flex-col" style={{ paddingTop: "26px" }}>
+                <div
+                  className="z-10 pt-2 transform -translate-y-1/2 flex flex-col"
+                  style={{ paddingTop: "26px" }}
+                >
                   <span className="text-white font-bold sm:text-[6px] lg:text-[14px]">
                     Live Bets-{formatNumber(totalBetAndarBahar?.andar || 0)}
                   </span>
@@ -170,7 +174,10 @@ function Box2({
             <div className="z-10 p-2 sm:p-1 text-white font-bold sm:text-[10px] lg:text-[24px]">
               <span>BAHAR</span>
               {data?.total_bet_on_cards?.bahar && (
-                <div className="z-10 pt-2 transform -translate-y-1/2 flex flex-col" style={{ paddingTop: "26px" }}>
+                <div
+                  className="z-10 pt-2 transform -translate-y-1/2 flex flex-col"
+                  style={{ paddingTop: "26px" }}
+                >
                   <span className="text-white font-bold sm:text-[6px] lg:text-[14px]">
                     Live Bets-{formatNumber(totalBetAndarBahar?.bahar || 0)}
                   </span>
@@ -182,11 +189,18 @@ function Box2({
           {coinPositions.map((pos, index) => (
             <div
               key={index}
-              className={`coin-container ${pos.position === "andar" ? "top-[17%] left-[53%]" : "bottom-[10%] left-[53%]"
-                }`}
+              className={`coin-container ${
+                pos.position === "andar"
+                  ? "top-[17%] left-[53%]"
+                  : "bottom-[10%] left-[53%]"
+              }`}
             >
               <div className="relative flex items-center justify-center">
-                <img src={pos.coin.image} alt={pos.coin.value} className="coin-image" />
+                <img
+                  src={pos.coin.image}
+                  alt={pos.coin.value}
+                  className="coin-image"
+                />
                 <span className="coin-symbol">₹</span>
               </div>
               <p className="coin-value">

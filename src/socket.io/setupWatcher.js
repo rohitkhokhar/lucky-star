@@ -1,11 +1,18 @@
 import { io } from "socket.io-client";
-import Peer from "peerjs";
 
-var room_id;
-var is_start_viwer = false;
-var peer = null;
-var socket;
+let peerConnection, descriptions, uid;
+let socket;
+const config = {
+  iceServers: [
+    {
+      urls: "turn:3.111.53.22:3478?transport=tcp",
+      username: "test",
+      credential: "test123"
+    }
+  ]
+};
 
+// === Utility: Dummy Audio/Video Tracks ===
 const createEmptyAudioTrack = () => {
   const ctx = new AudioContext();
   const oscillator = ctx.createOscillator();
@@ -16,7 +23,6 @@ const createEmptyAudioTrack = () => {
 };
 
 const createEmptyVideoTrack = (videoElement) => {
-  // Agar videoElement diya hai toh uska size lo, warna window ka size lo
   let width = window.innerWidth;
   let height = Math.floor((width * 9) / 16);
 
@@ -25,10 +31,7 @@ const createEmptyVideoTrack = (videoElement) => {
     height = videoElement.clientHeight || videoElement.offsetHeight || height;
   }
 
-  const canvas = Object.assign(document.createElement("canvas"), {
-    width,
-    height,
-  });
+  const canvas = Object.assign(document.createElement("canvas"), { width, height });
   canvas.getContext("2d").fillRect(0, 0, width, height);
 
   const stream = canvas.captureStream();
@@ -37,164 +40,114 @@ const createEmptyVideoTrack = (videoElement) => {
   return Object.assign(track, { enabled: false });
 };
 
-export const setupWatcher = (videoElement) => {
-  console.log("peer: Initializing watcher...");
+// === Setup Watcher ===
+export const setupWatcher = (videoElement, loaderElement = null) => {
+  console.log("webrtc: Initializing watcher...");
 
-  // Connect to the WebSocket server
-  socket = io("https://llive-stream-socket.liveluckystar.com", {
-    transports: ["websocket", "polling", "flashsocket"],
-  });
+  socket = io("https://test-sream.liveluckystar.com", { transports: ["websocket"] });
 
   socket.on("connect", () => {
-    console.log("peer: Connected to socket server.");
-    socket.emit("watcher"); // Notify server this is a viewer
+    console.log("webrtc: Connected to socket server.");
+    socket.emit("watcher");
   });
 
-  socket.on("broadcast_start_viwer", (room) => {
-    console.log("peer: Broadcast started, joining room:", room);
-    room_id = room;
-    if (is_start_viwer) {
-      startBroadCast(videoElement);
+  socket.on("broadcaster", () => {
+    console.log("webrtc: Broadcaster available, sending watcher event again...");
+    socket.emit("watcher");
+  });
+
+  socket.on("offer", (id, description) => {
+    console.log("webrtc: Received offer from:", id);
+    uid = id;
+    startBroadCast(id, description, videoElement, loaderElement);
+  });
+
+  socket.on("candidate", (id, candidate) => {
+    if (peerConnection) {
+      peerConnection.addIceCandidate(new RTCIceCandidate(candidate))
+        .catch(e => console.error("❌ Candidate error:", e));
     }
   });
 
-  socket.on("offer", (room) => {
-    console.log("peer: Received WebRTC offer for room:", room);
-    room_id = room;
-    startBroadCast(videoElement);
-  });
+  window.onunload = window.onbeforeunload = () => {
+    socket.close();
+    if (peerConnection) peerConnection.close();
+  };
 };
 
-const startBroadCast = (videoElement) => {
-  console.log("peer: Creating Room:", room_id);
-  if (!room_id) {
-    // alert("peer: Socket not connected");
-    return;
+// === Start Broadcast (answer offer) ===
+const startBroadCast = (id, description, videoElement, loaderElement = null) => {
+  if (loaderElement && loaderElement.style) {
+    loaderElement.style.display = "block";
   }
 
-  peer = new Peer({
-    host: "llive-stream.liveluckystar.com",
-    path: "/peerjs",
-    secure: true,
-  });
+  peerConnection = new RTCPeerConnection(config);
 
-  peer.on("open", (id) => {
-    console.log("peer: Connected to PeerJS server with ID:", id, videoElement);
-    is_start_viwer = true;
-    // setTimeout(() => joinRoom(room_id, videoElement), 500); // Ensure peer is ready
-    setTimeout(() => joinRoomNew(room_id, videoElement), 500); // Ensure peer is ready
-  });
-
-  peer.on("error", (err) => {
-    console.error("peer: Peer connection error:", err);
-  });
-};
-
-const joinRoom = (room, videoElement) => {
+  // Dummy local stream
   const audioTrack = createEmptyAudioTrack();
-  const videoTrack = createEmptyVideoTrack();
+  const videoTrack = createEmptyVideoTrack(videoElement);
   const mediaStream = new MediaStream([audioTrack, videoTrack]);
-  console.log("peer: Joining Room:", room);
-  room_id = room;
+  mediaStream.getTracks().forEach(track => peerConnection.addTrack(track, mediaStream));
 
-  // Debugging logs
-  console.log("peer: 👀 Watcher waiting for calls in room:", room_id);
+  peerConnection.setRemoteDescription(description)
+    .then(() => peerConnection.createAnswer())
+    .then(sdp => peerConnection.setLocalDescription(sdp))
+    .then(() => {
+      socket.emit("answer", id, peerConnection.localDescription);
+    });
 
-  // let call = peer.call(room_id, mediaStream);
-  peer.on("stream", (stream) => {
-    console.log("peer: call : stream", stream);
-
-    // if (videoElement) {
-    //   videoElement.srcObject = stream;
-    //   videoElement.play();
-    // }
-  });
-  peer.on("call", (call) => {
-    console.log("peer: 📞 Incoming call detected!", call);
-
-    setTimeout(() => {
-      console.log("peer: 📞 Answering call...");
-      call.answer(); // Watchers don't send a stream
-
-      call.on("stream", (remoteStream) => {
-        console.log("peer: 🎥 Remote stream received:", remoteStream);
-        if (videoElement) {
-          videoElement.srcObject = remoteStream;
-          videoElement.muted = true; // Optional: mute to allow autoplay
-          videoElement.play().catch((e) => {
-            console.log("Autoplay failed, waiting for user gesture...");
-            // Optionally show a play button to user
-          });
-        }
+  peerConnection.addEventListener("track", event => {
+    console.log("🎥 Remote stream received:", event.streams[0]);
+    if (videoElement) {
+      videoElement.srcObject = event.streams[0];
+      videoElement.muted = true;
+      videoElement.play().catch(() => {
+        console.log("Autoplay blocked, waiting for user gesture...");
       });
-
-      call.on("error", (err) => {
-        console.error("peer: ❌ Call error:", err);
-      });
-    }, 500); // Delay to ensure PeerJS processes the call
+    }
+    if (loaderElement && loaderElement.style) {
+      loaderElement.style.display = "none";
+    }
   });
-};
 
-const joinRoomNew = (room, videoElement, loaderElement) => {
-  const audioTrack = createEmptyAudioTrack();
-  const videoTrack = createEmptyVideoTrack(videoElement); // Pass videoElement here
-  const mediaStream = new MediaStream([audioTrack, videoTrack]);
+  peerConnection.onicecandidate = event => {
+    if (event.candidate) {
+      socket.emit("candidate", id, event.candidate);
+    }
+  };
 
-  if (loaderElement) loaderElement.style.display = "block"; // Show loader
+  // Optional DataChannel
+  const dataChannel = peerConnection.createDataChannel("message");
+  peerConnection.addEventListener("datachannel", event => {
+    console.log("📡 DataChannel opened", event.channel);
+    dataChannel.send("Hello from watcher!");
+  });
 
-  peer = new Peer();
-
-  peer.on("open", (id) => {
-    console.log("peer: joinRoomNew: open :  id: ", id, room);
-    let call = peer.call(room_id, mediaStream);
-
-    call.on("stream", (stream) => {
-      console.log("peer: joinRoomNew: call : stream", stream);
-      if (videoElement) {
-        videoElement.srcObject = stream;
-        videoElement.muted = true; // Optional: mute to allow autoplay
-        videoElement.play().catch((e) => {
-          console.log("Autoplay failed, waiting for user gesture...");
-          // Optionally show a play button to user
-        });
+  peerConnection.onconnectionstatechange = () => {
+    if (peerConnection.connectionState === "disconnected" ||
+      peerConnection.connectionState === "failed" ||
+      peerConnection.connectionState === "closed") {
+      console.log("⚠️ Connection lost, reconnecting...");
+      if (loaderElement && loaderElement.style) {
+        loaderElement.style.display = "block";
       }
-      if (loaderElement) loaderElement.style.display = "none"; // Hide loader when video starts
-    });
-
-    call.on("close", () => {
-      console.log("peer: call closed, showing loader...");
-      if (loaderElement) loaderElement.style.display = "block"; // Show loader again
-      reconnect(room, videoElement, loaderElement); // Try to reconnect
-    });
-
-    peer.on("call", (call) => {
-      console.log("peer: joinRoomNew: call ...!");
-      call.on("stream", (stream) => {
-        console.log("peer: joinRoomNew: 11: call : stream", stream);
-        if (videoElement) {
-          videoElement.srcObject = stream;
-
-          videoElement.muted = true; // Optional: mute to allow autoplay
-          videoElement.play().catch((e) => {
-            console.log("Autoplay failed, waiting for user gesture...");
-            // Optionally show a play button to user
-          });
-        }
-        if (loaderElement) loaderElement.style.display = "none"; // Hide loader when video starts
-      });
-    });
-  });
-
-  peer.on("error", (err) => {
-    console.log("peer: joinRoomNew: error ...!", err);
-    if (loaderElement) loaderElement.style.display = "block"; // Show loader
-    reconnect(room, videoElement, loaderElement);
-  });
+      reconnect(videoElement, loaderElement);
+    }
+  };
 };
 
-const reconnect = (room, videoElement, loaderElement) => {
+// === Reconnect Logic ===
+const reconnect = (videoElement, loaderElement = null) => {
   setTimeout(() => {
-    console.log("peer: Reconnecting to room:", room);
-    joinRoomNew(room, videoElement, loaderElement);
-  }, 3000); // Retry after 3 seconds
+    console.log("🔄 Attempting to reconnect...");
+    socket.emit("watcher");
+  }, 3000);
+};
+
+// === Utility: Enable audio after click ===
+export const enableAudio = (videoElement) => {
+  if (videoElement) {
+    console.log("🔊 Enabling audio");
+    videoElement.muted = false;
+  }
 };

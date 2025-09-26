@@ -1,15 +1,23 @@
-import io from "socket.io-client"; import Peer from "peerjs";// 👈 Importing v4 correctly
+import io from "socket.io-client";
 
 export function setupWatcher(videoElement) {
   let peerConnection;
+  let uid = null;
+
   const config = {
-    iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+    iceServers: [
+      {
+        urls: "turn:3.111.53.22:3478?transport=tcp",
+        username: "test",
+        credential: "test123",
+      },
+      // You can add more TURN servers here if needed
+    ],
   };
 
-  const socket = io("https://llive.europainfotech.com", {
+  const socket = io(window.location.origin, {
     transports: ["websocket"],
     path: "/socket.io",
-    query: { EIO: 3 },  // 👈 Forces Engine.IO v3
   });
 
   socket.on("connect", () => {
@@ -18,7 +26,11 @@ export function setupWatcher(videoElement) {
   });
 
   socket.on("offer", (id, description) => {
+    uid = id;
     peerConnection = new RTCPeerConnection(config);
+
+    console.log("📡 Received Offer:", description);
+
     peerConnection
       .setRemoteDescription(description)
       .then(() => peerConnection.createAnswer())
@@ -26,17 +38,32 @@ export function setupWatcher(videoElement) {
       .then(() => socket.emit("answer", id, peerConnection.localDescription));
 
     peerConnection.ontrack = (event) => {
+      console.log("🎥 Stream received:", event.streams[0]);
       if (videoElement) videoElement.srcObject = event.streams[0];
     };
 
+    // Optional: Data channel setup
+    const dataChannel = peerConnection.createDataChannel("message");
+    peerConnection.ondatachannel = (event) => {
+      console.log("💬 DataChannel received:", event.channel);
+      event.channel.onmessage = (msgEvent) => {
+        console.log("📨 Message from broadcaster:", msgEvent.data);
+      };
+      dataChannel.send("Hello from watcher 👋");
+    };
+
     peerConnection.onicecandidate = (event) => {
-      if (event.candidate) socket.emit("candidate", id, event.candidate);
+      if (event.candidate) {
+        socket.emit("candidate", id, event.candidate);
+      }
     };
   });
 
   socket.on("candidate", (id, candidate) => {
     if (peerConnection) {
-      peerConnection.addIceCandidate(new RTCIceCandidate(candidate)).catch((e) => console.error("❌ ICE Error:", e));
+      peerConnection
+        .addIceCandidate(new RTCIceCandidate(candidate))
+        .catch((e) => console.error("❌ ICE Error:", e));
     }
   });
 
@@ -44,8 +71,19 @@ export function setupWatcher(videoElement) {
     socket.emit("watcher");
   });
 
-  return () => {
-    if (peerConnection) peerConnection.close();
-    socket.disconnect();
+  function enableAudio() {
+    if (videoElement) {
+      console.log("🔊 Enabling audio");
+      videoElement.muted = false;
+    }
+  }
+
+  // Return cleanup + audio enable handler
+  return {
+    cleanup: () => {
+      if (peerConnection) peerConnection.close();
+      socket.disconnect();
+    },
+    enableAudio,
   };
 }

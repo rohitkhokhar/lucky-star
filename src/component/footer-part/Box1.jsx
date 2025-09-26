@@ -61,7 +61,7 @@ function Box1({
             flexShrink: 0,
             opacity: canPlace ? 1 : 0.5,
           }}
-          className="w-1/5 rounded-2xl border border-[#644E53] text-white h-[20px] lg:h-[43px] text-[8px] lg:text-[12px] flex justify-center items-center"
+          className="w-1/5 rounded-2xl border border-[#644E53] text-white font-bold h-[20px] lg:h-[43px] text-[8px] lg:text-[12px] flex justify-center items-center"
           onClick={handleUndo}
         >
           UNDO
@@ -85,7 +85,9 @@ function Box1({
                 alt={coin.value}
                 className="absolute lg:h-full"
               />
-              <p className="text-[8px] font-bold z-[10]">{formatNumber(coin.value || 0)}</p>
+              <p className="text-[8px] lg:text-[12px] font-bold z-[10]">
+                {formatNumber(coin.value || 0)}
+              </p>
             </div>
           );
         })}
@@ -97,7 +99,7 @@ function Box1({
             flexShrink: 0,
             opacity: canPlace ? 1 : 0.5,
           }}
-          className="w-1/3 rounded-2xl border border-[#644E53] text-white h-[20px] lg:h-[43px] text-[8px] lg:text-[12px] flex justify-center items-center"
+          className="w-1/3 rounded-2xl border border-[#644E53] text-white font-bold h-[20px] lg:h-[43px] text-[8px] lg:text-[14px] flex justify-center items-center"
           onClick={placeBet}
         >
           PLACE BET
@@ -105,10 +107,10 @@ function Box1({
       </div>
 
       <div className="w-full h-[30%] flex justify-evenly items-center gap-1.5">
-        <div className="w-1/2 rounded-2xl border border-[#644E53] text-white h-[30px] lg:h-[43px] text-[10px] lg:text-[18px] flex justify-center items-center">
+        <div className="w-1/2 rounded-2xl border border-[#644E53] text-white font-bold h-[30px] lg:h-[43px] text-[10px] lg:text-[18px] flex justify-center items-center">
           BALANCE: ₹{total_wallet ?? userBalance}
         </div>
-        <div className="w-1/2 rounded-2xl border border-[#644E53] text-white h-[30px] lg:h-[43px] text-[8px] lg:text-[16px] flex justify-center items-center">
+        <div className="w-1/2 rounded-2xl border border-[#644E53] text-white font-bold h-[30px] lg:h-[43px] text-[8px] lg:text-[16px] flex justify-center items-center">
           FIRST BET: ₹{betAmounts?.first ?? 0} <br />
           SECOND BET: ₹{betAmounts?.second ?? 0}
         </div>
