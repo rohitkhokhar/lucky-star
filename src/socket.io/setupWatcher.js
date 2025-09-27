@@ -5,12 +5,16 @@ let socket;
 const config = {
   iceServers: [
     {
-      urls: "turn:3.111.53.22:3478?transport=tcp",
+      urls: [
+        "turn:3.111.53.22:3478?transport=udp",
+        "turn:3.111.53.22:3478?transport=tcp"
+      ],
       username: "test",
       credential: "test123"
     }
   ]
 };
+
 
 // === Utility: Dummy Audio/Video Tracks ===
 const createEmptyAudioTrack = () => {

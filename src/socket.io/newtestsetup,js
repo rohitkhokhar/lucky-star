@@ -1,0 +1,153 @@
+import { io } from "socket.io-client";
+
+let peerConnection, descriptions, uid;
+let socket;
+const config = {
+  iceServers: [
+    {
+      urls: "turn:3.111.53.22:3478?transport=tcp",
+      username: "test",
+      credential: "test123"
+    }
+  ]
+};
+
+// === Utility: Dummy Audio/Video Tracks ===
+const createEmptyAudioTrack = () => {
+  const ctx = new AudioContext();
+  const oscillator = ctx.createOscillator();
+  const dst = oscillator.connect(ctx.createMediaStreamDestination());
+  oscillator.start();
+  const track = dst.stream.getAudioTracks()[0];
+  return Object.assign(track, { enabled: false });
+};
+
+const createEmptyVideoTrack = (videoElement) => {
+  let width = window.innerWidth;
+  let height = Math.floor((width * 9) / 16);
+
+  if (videoElement) {
+    width = videoElement.clientWidth || videoElement.offsetWidth || width;
+    height = videoElement.clientHeight || videoElement.offsetHeight || height;
+  }
+
+  const canvas = Object.assign(document.createElement("canvas"), { width, height });
+  canvas.getContext("2d").fillRect(0, 0, width, height);
+
+  const stream = canvas.captureStream();
+  const track = stream.getVideoTracks()[0];
+
+  return Object.assign(track, { enabled: false });
+};
+
+// === Setup Watcher ===
+export const setupWatcher = (videoElement, loaderElement = null) => {
+  console.log("webrtc: Initializing watcher...");
+
+  socket = io("https://test-sream.liveluckystar.com", { transports: ["websocket"] });
+
+  socket.on("connect", () => {
+    console.log("webrtc: Connected to socket server.");
+    socket.emit("watcher");
+  });
+
+  socket.on("broadcaster", () => {
+    console.log("webrtc: Broadcaster available, sending watcher event again...");
+    socket.emit("watcher");
+  });
+
+  socket.on("offer", (id, description) => {
+    console.log("webrtc: Received offer from:", id);
+    uid = id;
+    startBroadCast(id, description, videoElement, loaderElement);
+  });
+
+  socket.on("candidate", (id, candidate) => {
+    if (peerConnection) {
+      peerConnection.addIceCandidate(new RTCIceCandidate(candidate))
+        .catch(e => console.error("❌ Candidate error:", e));
+    }
+  });
+
+  window.onunload = window.onbeforeunload = () => {
+    socket.close();
+    if (peerConnection) peerConnection.close();
+  };
+};
+
+// === Start Broadcast (answer offer) ===
+const startBroadCast = (id, description, videoElement, loaderElement = null) => {
+  if (loaderElement && loaderElement.style) {
+    loaderElement.style.display = "block";
+  }
+
+  peerConnection = new RTCPeerConnection(config);
+
+  // Dummy local stream
+  const audioTrack = createEmptyAudioTrack();
+  const videoTrack = createEmptyVideoTrack(videoElement);
+  const mediaStream = new MediaStream([audioTrack, videoTrack]);
+  mediaStream.getTracks().forEach(track => peerConnection.addTrack(track, mediaStream));
+
+  peerConnection.setRemoteDescription(description)
+    .then(() => peerConnection.createAnswer())
+    .then(sdp => peerConnection.setLocalDescription(sdp))
+    .then(() => {
+      socket.emit("answer", id, peerConnection.localDescription);
+    });
+
+  peerConnection.addEventListener("track", event => {
+    console.log("🎥 Remote stream received:", event.streams[0]);
+    if (videoElement) {
+      videoElement.srcObject = event.streams[0];
+      videoElement.muted = true;
+      videoElement.play().catch(() => {
+        console.log("Autoplay blocked, waiting for user gesture...");
+      });
+    }
+    if (loaderElement && loaderElement.style) {
+      loaderElement.style.display = "none";
+    }
+  });
+
+  peerConnection.onicecandidate = event => {
+    if (event.candidate) {
+      socket.emit("candidate", id, event.candidate);
+    }
+  };
+
+  // Optional DataChannel
+  const dataChannel = peerConnection.createDataChannel("message");
+  peerConnection.addEventListener("datachannel", event => {
+    console.log("📡 DataChannel opened", event.channel);
+    dataChannel.send("Hello from watcher!");
+  });
+
+  peerConnection.onconnectionstatechange = () => {
+    if (peerConnection.connectionState === "disconnected" ||
+      peerConnection.connectionState === "failed" ||
+      peerConnection.connectionState === "closed") {
+      console.log("⚠️ Connection lost, reconnecting...");
+      if (loaderElement && loaderElement.style) {
+        loaderElement.style.display = "block";
+      }
+      reconnect(videoElement, loaderElement);
+    }
+  };
+};
+
+// === Reconnect Logic ===
+const reconnect = (videoElement, loaderElement = null) => {
+  setTimeout(() => {
+    console.log("🔄 Attempting to reconnect...");
+    socket.emit("watcher");
+  }, 3000);
+};
+
+// === Utility: Enable audio after click ===
+export const enableAudio = (videoElement) => {
+  if (videoElement) {
+    console.log("🔊 Enabling audio");
+    videoElement.muted = false;
+  }
+};
