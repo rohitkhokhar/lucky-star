@@ -699,7 +699,7 @@ function FooterPart() {
     <>
       {showAnnouncement && <AnnouncementPopup />}
       <div
-        className="absolute bottom-0 w-full flex footerContainer gap-2 h-[40%] lg:h-[30%] z-11"
+        className="absolute bottom-0 w-full flex footerContainer gap-2 h-[50%] lg:h-[40%] z-11"
         style={{ userSelect: "none" }}
       >
         {toastMessage && (

@@ -53,20 +53,8 @@ function Box1({
         alt="Lucky Star"
         className="w-[40%] lg:w-[55%] pb-3"
       />
-      <div className="w-[80%] h-[25%] flex justify-center items-center">
-        <button
-          style={{
-            pointerEvents: canPlace ? "auto" : "none",
-            cursor: canPlace ? "pointer" : "no-drop",
-            flexShrink: 0,
-            opacity: canPlace ? 1 : 0.5,
-          }}
-          className="w-1/5 rounded-2xl border border-[#644E53] text-white font-bold h-[20px] lg:h-[43px] text-[8px] lg:text-[12px] flex justify-center items-center"
-          onClick={handleUndo}
-        >
-          UNDO
-        </button>
 
+      <div className="w-full h-[25%] flex justify-center items-center ">
         {coins.map((coin, index) => {
           const isDisabled = !canPlace || coin.value > userBalance - totalBet;
           return (
@@ -83,34 +71,48 @@ function Box1({
               <img
                 src={coin.image}
                 alt={coin.value}
-                className="absolute lg:h-full"
+                className="absolute lg:h-full w-[50px]"
               />
-              <p className="text-[8px] lg:text-[12px] font-bold z-[10]">
+              <p className="text-[14px] lg:text-[12px] sm:font-extrabold z-[10]">
                 {formatNumber(coin.value || 0)}
               </p>
             </div>
           );
         })}
+      </div>
 
+      <div className="w-full h-[35%] flex justify-center items-center gap-1.5  mt-2">
+        {/* Buttons */}
         <button
           style={{
             pointerEvents: canPlace ? "auto" : "none",
             cursor: canPlace ? "pointer" : "no-drop",
-            flexShrink: 0,
             opacity: canPlace ? 1 : 0.5,
           }}
-          className="w-1/3 rounded-2xl border border-[#644E53] text-white font-bold h-[20px] lg:h-[43px] text-[8px] lg:text-[14px] flex justify-center items-center"
+          className="flex-1 rounded-2xl border border-[#644E53] bg-red-700 text-white font-bold h-[30px] lg:h-[43px] text-[15px] lg:text-[18px] flex justify-center items-center"
+          onClick={handleUndo}
+        >
+          UNDO
+        </button>
+        <button
+          style={{
+            pointerEvents: canPlace ? "auto" : "none",
+            cursor: canPlace ? "pointer" : "no-drop",
+            opacity: canPlace ? 1 : 0.5,
+          }}
+          className="flex-1 rounded-2xl border border-[#644E53] bg-green-600 text-white font-bold h-[30px] lg:h-[43px] text-[15px] lg:text-[18px] flex justify-center items-center"
           onClick={placeBet}
         >
           PLACE BET
         </button>
       </div>
 
-      <div className="w-full h-[30%] flex justify-evenly items-center gap-1.5">
-        <div className="w-1/2 rounded-2xl border border-[#644E53] text-white font-bold h-[30px] lg:h-[43px] text-[10px] lg:text-[18px] flex justify-center items-center">
+      <div className="w-full h-[35%] flex justify-center items-center gap-1.5">
+        {/* Info Boxes */}
+        <div className="flex-1 rounded-2xl border border-[#644E53] bg-[#313131] text-white font-bold h-[40px] lg:h-[43px] text-[12px] lg:text-[18px] flex justify-center items-center">
           BALANCE: ₹{total_wallet ?? userBalance}
         </div>
-        <div className="w-1/2 rounded-2xl border border-[#644E53] text-white font-bold h-[30px] lg:h-[43px] text-[8px] lg:text-[16px] flex justify-center items-center">
+        <div className="flex-1 rounded-2xl border border-[#644E53] bg-[#313131] text-white font-bold h-[40px] lg:h-[43px] text-[12px] lg:text-[16px] flex flex-col justify-center items-center">
           FIRST BET: ₹{betAmounts?.first ?? 0} <br />
           SECOND BET: ₹{betAmounts?.second ?? 0}
         </div>

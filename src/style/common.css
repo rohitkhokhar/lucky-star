@@ -17,8 +17,8 @@
 }
 
 .coin-image {
-    width: 13px;
-    height: 13px;
+    width: 25px;
+    height: 25px;
 }
 
 @media (min-width: 1024px) {
@@ -32,7 +32,7 @@
     position: absolute;
     font-weight: bold;
     color: black;
-    font-size: 8px;
+    font-size: 14px;
     pointer-events: none;
     /* ⬅️ ensure symbol doesn’t intercept clicks */
     top: 50%;
@@ -43,7 +43,7 @@
 .coin-value {
     font-weight: bold;
     color: white;
-    font-size: 6px;
+    font-size: 25px;
     line-height: 8px;
     pointer-events: none;
     /* ⬅️ ensure amount doesn’t intercept clicks */

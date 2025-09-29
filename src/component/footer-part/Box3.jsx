@@ -18,7 +18,14 @@ function Box3({ data, isResult }) {
 
   return (
     <div className="w-full flex flex-col justify-end items-center px-2 sm:px-0">
-      <div className="w-full h-[70%] flex flex-col items-center">
+      <div
+        className="w-full h-[70%] flex flex-col items-center"
+        style={{
+          display: "flex",
+          justifyContent: "center", // horizontal center
+          alignItems: "flex-end", // bottom align
+        }}
+      >
         <div className="w-full sm:w-[90%] lg:w-[80%] h-[20%] flex justify-end gap-1 sm:gap-1">
           <ProgressBar blackRatio={data?.last_win_cards?.length || 0} />
         </div>
@@ -33,9 +40,9 @@ function Box3({ data, isResult }) {
                   : "bg-[#313131] border-[#4F4F4F]"
               } ${
                 value === "bahar"
-                  ? "w-[10px] h-[10px] sm:w-[12px] sm:h-[12px] lg:w-[30px] lg:h-[30px]"
-                  : "w-[10px] h-[10px] sm:w-[12px] sm:h-[12px] lg:w-[30px] lg:h-[30px]"
-              } text-[0.5rem] sm:text-[0.5rem] lg:text-[0.9rem]`}
+                  ? "w-[20px] h-[20px] sm:w-[18px] sm:h-[18px] lg:w-[30px] lg:h-[30px]"
+                  : "w-[20px] h-[20px] sm:w-[18px] sm:h-[18px] lg:w-[30px] lg:h-[30px]"
+              } text-[0.5rem] sm:text-[0.7rem] lg:text-[0.9rem]`}
               // style={{
               //   fontSize:
               //     value === "bahar"
@@ -53,7 +60,7 @@ function Box3({ data, isResult }) {
           className="w-full flex justify-end pr-3 text-white"
           style={{ fontSize: "12px" }}
         >
-          <div className="px-2 pt-1">
+          <div className="px-2 pt-1 text-xl">
             Bet: {userTotalBet.toLocaleString()}/
             {totalBetLimit.toLocaleString()}
           </div>

@@ -128,10 +128,17 @@ function Box2({
     gameState === "no_more_third_bet";
 
   return (
-    <div className="w-[90%] flex flex-col justify-end items-center px-2 sm:px-0 z-11">
+    <div className="w-[100%] flex flex-col justify-end items-center px-2 sm:px-0 z-11">
       {insufficientBalance && <Toast message={errorMessage} type={"error"} />}
-      <div className="w-[80%] h-[70%] flex flex-col items-center">
-        <div className="w-[80%] h-[80%] relative justify-center">
+      <div
+        className="w-[80%] h-[70%] flex flex-col items-center "
+        style={{
+          display: "flex",
+          justifyContent: "center", // horizontal center
+          alignItems: "flex-end", // bottom align
+        }}
+      >
+        <div className="w-[100%] h-[80%] relative justify-center">
           {/* ANDAR section */}
           <div
             className="w-full h-1/2 relative flex pb-2"
@@ -139,14 +146,14 @@ function Box2({
             style={isBlurred ? { filter: "grayscale(100%)" } : {}}
           >
             <img src={subtrackTop} alt="" className="w-full h-full absolute" />
-            <div className="z-10 p-2 sm:p-1 text-white font-bold sm:text-[10px] lg:text-[24px]">
+            <div className="z-10 p-2 sm:p-1 text-white font-bold sm:text-[14px] lg:text-[24px]">
               <span>ANDAR</span>
               {data?.total_bet_on_cards?.andar && (
                 <div
                   className="z-10 pt-2 transform -translate-y-1/2 flex flex-col"
-                  style={{ paddingTop: "26px" }}
+                  style={{ paddingTop: "30px" }}
                 >
-                  <span className="text-white font-bold sm:text-[6px] lg:text-[14px]">
+                  <span className="text-white font-bold sm:text-[12px] lg:text-[14px]">
                     Live Bets-{formatNumber(totalBetAndarBahar?.andar || 0)}
                   </span>
                 </div>
@@ -181,14 +188,14 @@ function Box2({
               alt=""
               className="w-full h-full absolute"
             />
-            <div className="z-10 p-2 sm:p-1 text-white font-bold sm:text-[10px] lg:text-[24px]">
+            <div className="z-10 p-2 sm:p-1 text-white font-bold sm:text-[14px] lg:text-[24px]">
               <span>BAHAR</span>
               {data?.total_bet_on_cards?.bahar && (
                 <div
                   className="z-10 pt-2 transform -translate-y-1/2 flex flex-col"
-                  style={{ paddingTop: "26px" }}
+                  style={{ paddingTop: "30px" }}
                 >
-                  <span className="text-white font-bold sm:text-[6px] lg:text-[14px]">
+                  <span className="text-white font-bold sm:text-[10px] lg:text-[14px]">
                     Live Bets-{formatNumber(totalBetAndarBahar?.bahar || 0)}
                   </span>
                 </div>
@@ -200,7 +207,7 @@ function Box2({
           {coinPositions.map((pos, index) => (
             <div
               key={index}
-              className={`coin-container ${
+              className={`coin-container  ${
                 pos.position === "andar"
                   ? "top-[17%] left-[53%]"
                   : "bottom-[10%] left-[53%]"
@@ -214,7 +221,7 @@ function Box2({
                 />
                 <span className="coin-symbol">₹</span>
               </div>
-              <p className="coin-value">
+              <p className="coin-value ">
                 {formatNumber(pos.totalValue, total_wallet || userBalance)}
               </p>
             </div>
