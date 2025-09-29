@@ -201,7 +201,7 @@ function FooterPart() {
               } else {
                 updated.push({
                   coin: prev[0]?.coin || {
-                    image: "/src/assets/border1.png",
+                    image: "../../assets/border1.png",
                     value: 0,
                   }, // fallback
                   position: "andar",
@@ -220,7 +220,7 @@ function FooterPart() {
               } else {
                 updated.push({
                   coin: prev[0]?.coin || {
-                    image: "/src/assets/border1.png",
+                    image: "../../assets/border1.png",
                     value: 0,
                   }, // fallback
                   position: "bahar",
