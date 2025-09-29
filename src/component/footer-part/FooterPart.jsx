@@ -31,7 +31,7 @@ function FooterPart() {
   const [toastMessage, setToastMessage] = useState("");
   const [toastType, setToastType] = useState("info");
   const [data, setData] = useState({
-    user_total_bet: 0
+    user_total_bet: 0,
   });
   const [toastKey, setToastKey] = useState(0);
   const [announcement, setAnnouncement] = useState("");
@@ -53,7 +53,7 @@ function FooterPart() {
     second: { andar: 0, bahar: 0 },
     third: { andar: 0, bahar: 0 },
   });
-  const [coinHistory, setCoinHistory] = useState([]); 
+  const [coinHistory, setCoinHistory] = useState([]);
 
   const coins =
     data?.bet_slots?.map((value, index) => ({
@@ -155,6 +155,85 @@ function FooterPart() {
             setShowAnnouncement(true);
           }
 
+          const bets = data.bet_lists || [];
+          const firstBetTotal = bets
+            .filter((b) => b.bet_no === "first_bet")
+            .reduce(
+              (sum, b) =>
+                sum + (b.card_details.andar || 0) + (b.card_details.bahar || 0),
+              0
+            );
+
+          const secondBetTotal = bets
+            .filter((b) => b.bet_no === "second_bet")
+            .reduce(
+              (sum, b) =>
+                sum + (b.card_details.andar || 0) + (b.card_details.bahar || 0),
+              0
+            );
+
+          setBetAmounts({
+            first: firstBetTotal,
+            second: secondBetTotal,
+          });
+
+          let andarTotal = 0;
+          let baharTotal = 0;
+
+          bets.forEach((b) => {
+            if (b.card_details?.andar) {
+              andarTotal += b.card_details.andar;
+            }
+            if (b.card_details?.bahar) {
+              baharTotal += b.card_details.bahar;
+            }
+          });
+
+          setCoinPositions((prev) => {
+            let updated = [...prev];
+
+            // andar
+            if (andarTotal > 0) {
+              const existing = updated.find((pos) => pos.position === "andar");
+              if (existing) {
+                // ✅ सिर्फ value update होगा, image वही रहेगा
+                existing.totalValue = andarTotal;
+              } else {
+                updated.push({
+                  coin: prev[0]?.coin || {
+                    image: "/src/assets/border1.png",
+                    value: 0,
+                  }, // fallback
+                  position: "andar",
+                  totalValue: andarTotal,
+                });
+              }
+            } else {
+              updated = updated.filter((pos) => pos.position !== "andar");
+            }
+
+            // bahar
+            if (baharTotal > 0) {
+              const existing = updated.find((pos) => pos.position === "bahar");
+              if (existing) {
+                existing.totalValue = baharTotal;
+              } else {
+                updated.push({
+                  coin: prev[0]?.coin || {
+                    image: "/src/assets/border1.png",
+                    value: 0,
+                  }, // fallback
+                  position: "bahar",
+                  totalValue: baharTotal,
+                });
+              }
+            } else {
+              updated = updated.filter((pos) => pos.position !== "bahar");
+            }
+
+            return updated;
+          });
+
           let message = "";
           let type = "info";
 
@@ -194,6 +273,15 @@ function FooterPart() {
               message = "Waiting for game state to update...";
           }
 
+          const andar1 = data.total_bet_on_cards?.andar || 0;
+          const bahar1 = data.total_bet_on_cards?.bahar || 0;
+          console.log({ andar1, bahar1 });
+          setData((prev) => ({
+            ...prev,
+            total_bet_on_cards: data.total_bet_on_cards,
+            user_total_bet: andar1 + bahar1,
+          }));
+
           setToastMessage(message);
           setToastType(type);
           setToastKey((prev) => prev + 1);
@@ -208,16 +296,28 @@ function FooterPart() {
           localCoinPositions = [];
           setHasPlacedBet(false);
           setBetAmounts({ first: 0, second: 0, third: 0 });
-          setData(prev => ({ ...prev, user_total_bet: 0, total_bet_on_cards: {} }));
+          setData((prev) => ({
+            ...prev,
+            user_total_bet: 0,
+            total_bet_on_cards: {},
+          }));
           setToastKey((prev) => prev + 1);
           break;
 
+        case "LIVE_GAME_PLACE_BET":
+          if (data.err == true) {
+            setErrorMessage(data.msg);
+            setToastMessage(true);
+            setTimeout(() => setToastMessage(false), 3000);
+            return;
+          }
+
         case "LIVE_GAME_PLACE_BET_INFO":
           const { andar = 0, bahar = 0 } = data.total_bet_on_cards || {};
-          setData(prev => ({
+          setData((prev) => ({
             ...prev,
             total_bet_on_cards: data.total_bet_on_cards,
-            user_total_bet: andar + bahar
+            user_total_bet: andar + bahar,
           }));
           break;
 
@@ -361,7 +461,7 @@ function FooterPart() {
           : gameState === "start_round_second_bet"
           ? "second"
           : "third";
-  
+
       // Track in visual state
       setCoinPositions((prev) => {
         const existing = prev.find((pos) => pos.position === position);
@@ -453,7 +553,8 @@ function FooterPart() {
       .reduce((sum, pos) => sum + pos.totalValue, 0);
   };
 
-  const placeBet = () => {
+  const placeBet = (selectedBet) => {
+    // 1️⃣ Check if betting is allowed at this stage
     if (
       gameState !== "start_round_first_bet" &&
       gameState !== "start_round_second_bet" &&
@@ -465,29 +566,22 @@ function FooterPart() {
       return;
     }
 
-    // Figure out round
+    // 2️⃣ Determine current round
     const roundKey =
       gameState === "start_round_first_bet"
         ? "first"
         : gameState === "start_round_second_bet"
-          ? "second"
-          : "third";
+        ? "second"
+        : "third";
 
-    let andarBet = pendingBets[roundKey]?.andar || 0;
-    let baharBet = pendingBets[roundKey]?.bahar || 0;
+    console.log("Current Round:", roundKey);
 
-    // ✅ If no bets in current round, but previous round has carry-forward
-    if (andarBet === 0 && baharBet === 0) {
-      const lastRound =
-        roundKey === "second" ? "first" :
-          roundKey === "third" ? "second" : null;
+    // 3️⃣ Get pending bets for this round
+    const currentPending = pendingBets[roundKey] || { andar: 0, bahar: 0 };
 
-      if (lastRound) {
-        andarBet = pendingBets[lastRound]?.andar || 0;
-        baharBet = pendingBets[lastRound]?.bahar || 0;
-      }
-    }
-
+    // 4️⃣ Calculate total bets including new selection
+    const andarBet = (currentPending.andar || 0) + (selectedBet.andar || 0);
+    const baharBet = (currentPending.bahar || 0) + (selectedBet.bahar || 0);
     const totalBet = andarBet + baharBet;
 
     if (totalBet <= 0) {
@@ -504,7 +598,6 @@ function FooterPart() {
       return;
     }
 
-    // Prepare payload
     const payload = {
       card_details: {
         ...(andarBet > 0 && { andar: andarBet }),
@@ -512,46 +605,75 @@ function FooterPart() {
       },
     };
 
-    sendEvent("LIVE_GAME_PLACE_BET", payload);
-
-    // Update round bet amounts
-    setBetAmounts((prev) => ({
-      ...prev,
-      [roundKey]: totalBet,
-    }));
-
-    // Update user balance immediately
-    const newBalance = userBalance - totalBet;
-    setUserBalance(newBalance);
-
-    if (user) {
-      const updatedUser = { ...user, chips: newBalance };
-      localStorage.setItem("user", JSON.stringify(updatedUser));
-      localStorage.setItem("total_wallet", JSON.stringify(newBalance));
+    const socket = getSocket();
+    if (!socket) {
+      setToastMessage("Socket connection not available!");
+      setToastType("error");
+      setToastKey((prev) => prev + 1);
+      return;
     }
 
-    // ✅ Clear pending bets for this round (carry-forward done)
-    setPendingBets((prev) => ({
-      ...prev,
-      [roundKey]: { andar: 0, bahar: 0 },
-    }));
+    // 5️⃣ Handle server response
+    const handlePlaceBetResponse = (response) => {
+      console.log("Server Response:", response);
 
-    // Clear visual coins
-    // setCoinPositions([]);
-    // localCoinPositions = [];
+      // Make event check case-insensitive
+      if (!response.en || response.en.toLowerCase() !== "live_game_place_bet")
+        return;
 
-    let message = "Bet Placed: ";
-    if (andarBet > 0) message += `Andar ₹${andarBet} `;
-    if (baharBet > 0) message += `Bahar ₹${baharBet}`;
+      if (response.err) {
+        // ❌ Server rejected bet
+        setToastMessage(response.msg || "Bet failed!");
+        setToastType("error");
+      } else {
+        // ✅ Bet approved
+        setToastMessage(
+          `Bet Placed: ${andarBet > 0 ? `Andar ₹${andarBet} ` : ""}${
+            baharBet > 0 ? `Bahar ₹${baharBet}` : ""
+          }`.trim()
+        );
+        setToastType("success");
+        console.log("Bet successfully placed:", totalBet);
 
-    setToastMessage(message.trim());
-    setToastType("success");
-    setSelectedCoin(null);
-    setHasPlacedBet(true);
-    setToastKey((prev) => prev + 1);
-    setCoinHistory((prev) =>
-      prev.map((coin) => ({ ...coin, confirmed: true }))
-    );    
+        // Update bet amounts for this round
+        setBetAmounts((prev) => ({
+          ...prev,
+          [roundKey]: (prev[roundKey] || 0) + totalBet,
+        }));
+
+        // Update user balance
+        const newBalance = userBalance - totalBet;
+        setUserBalance(newBalance);
+        if (user) {
+          const updatedUser = { ...user, chips: newBalance };
+          localStorage.setItem("user", JSON.stringify(updatedUser));
+          localStorage.setItem("total_wallet", JSON.stringify(newBalance));
+        }
+
+        // Clear pending bets for this round
+        setPendingBets((prev) => ({
+          ...prev,
+          [roundKey]: { andar: 0, bahar: 0 },
+        }));
+
+        // Mark coin history as confirmed
+        setCoinHistory((prev) =>
+          prev.map((coin) =>
+            coin.roundKey === roundKey ? { ...coin, confirmed: true } : coin
+          )
+        );
+      }
+
+      // Trigger toast update
+      setToastKey((prev) => prev + 1);
+
+      // Remove this listener after response
+      socket.off("res", handlePlaceBetResponse);
+    };
+
+    // 6️⃣ Add listener and send event
+    socket.on("res", handlePlaceBetResponse);
+    sendEvent("LIVE_GAME_PLACE_BET", payload);
   };
 
   const totalBet = coinPositions.reduce((sum, pos) => sum + pos.totalValue, 0);
@@ -603,6 +725,7 @@ function FooterPart() {
           data={data}
           total_wallet={total_wallet}
           userBalance={userBalance}
+          selectedCoin={selectedCoin}
         />
         <Box3 data={data} />
       </div>

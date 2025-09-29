@@ -8,41 +8,19 @@ import Toast from "./Toast";
 
 // Helper function to format numbers
 const formatNumber = (num, maxValue = null) => {
-  // Handle undefined/null/NaN cases
-  if (num === undefined || num === null || isNaN(num)) {
-    return "0";
-  }
-
-  // Convert to number in case it's a string
+  if (num === undefined || num === null || isNaN(num)) return "0";
   let number = Number(num);
-
-  // If maxValue is provided, ensure we don't exceed it
   if (maxValue !== null) {
     const max = Number(maxValue);
-    if (!isNaN(max) && number > max) {
-      number = max;
-    }
+    if (!isNaN(max) && number > max) number = max;
   }
-
-  // if (number >= 1000) {
-  //   const thousands = number / 1000;
-  //   // Split into integer and decimal parts
-  //   const parts = thousands.toString().split(".");
-
-  //   if (parts.length === 1 || parts[1] === "0") {
-  //     // No decimal part or it's .0
-  //     return `${parts[0]}k`;
-  //   } else {
-  //     // Show exact decimal digits without rounding
-  //     return `${parts[0]}.${parts[1].substring(0, 1)}k`;
-  //   }
-  // }
-
   return number.toString();
 };
+
 function Box2({
   placeCoin,
   coinPositions,
+  selectedCoin, // <-- selected coin object { value, image }
   centerCard,
   gameState,
   data,
@@ -51,6 +29,7 @@ function Box2({
 }) {
   const [totalBetAndarBahar, setTotalBetAndarBahar] = useState(null);
   const [insufficientBalance, setInsufficientBalance] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     if (data?.total_bet_on_cards) {
@@ -62,52 +41,85 @@ function Box2({
     const socket = getSocket();
     if (!socket) return;
 
-    sendEvent("LIVE_GAME_PLACE_BET_INFO", {
-      data: {},
-    });
+    sendEvent("LIVE_GAME_PLACE_BET_INFO", { data: {} });
 
     const liveGamePlaceBetInfo = (response) => {
       if (response.err) {
         console.error(`Error from server: ${response.msg}`);
         return;
       }
-
       const { en, data } = response;
-
       if (en === "LIVE_GAME_PLACE_BET_INFO") {
-        console.log("LIVE_GAME_PLACE_BET_INFO data:", data);
         setTotalBetAndarBahar(data?.total_bet_on_cards);
       }
     };
 
     socket.on("res", liveGamePlaceBetInfo);
-
     return () => {
       socket.off("res", liveGamePlaceBetInfo);
     };
   }, []);
 
   const handlePlaceBet = (position) => {
-    // Calculate total bet value
-    const totalBetValue = coinPositions.reduce((sum, pos) => {
-      return sum + (pos.totalValue || 0);
-    }, 0);
-
-    // Get current balance (use total_wallet if available, otherwise userBalance)
-    const currentBalance = total_wallet ?? userBalance ?? 0;
-
-    if (totalBetValue > currentBalance) {
+    if (!selectedCoin) {
+      setErrorMessage("Please select a coin!");
       setInsufficientBalance(true);
-      // Hide the message after 3 seconds
       setTimeout(() => setInsufficientBalance(false), 3000);
       return;
     }
 
-    // Clear any previous insufficient balance message
-    setInsufficientBalance(false);
+    const currentBalance = total_wallet ?? userBalance ?? 0;
+    const totalBetValue = coinPositions.reduce(
+      (sum, pos) => sum + (pos.totalValue || 0),
+      0
+    );
+    const totalBetLimit =
+      (data?.bet_limit_configs?.andar || 0) +
+      (data?.bet_limit_configs?.bahar || 0);
 
-    // Place the bet if balance is sufficient
-    placeCoin(position);
+    const andarLimit = data?.bet_limit_configs?.andar || 0;
+    const baharLimit = data?.bet_limit_configs?.bahar || 0;
+
+    const andarBet =
+      coinPositions.find((p) => p.position === "andar")?.totalValue || 0;
+    const baharBet =
+      coinPositions.find((p) => p.position === "bahar")?.totalValue || 0;
+
+    const newBetValue = selectedCoin.value;
+
+    // ✅ Check balance
+    if (totalBetValue + newBetValue > currentBalance) {
+      setErrorMessage("Insufficient Balance!");
+      setInsufficientBalance(true);
+      setTimeout(() => setInsufficientBalance(false), 3000);
+      return;
+    }
+
+    // ✅ Check total table limit
+    if (totalBetValue + newBetValue > totalBetLimit) {
+      setErrorMessage("Table Limit Exceeded!");
+      setInsufficientBalance(true);
+      setTimeout(() => setInsufficientBalance(false), 3000);
+      return;
+    }
+
+    // ✅ Check individual side limits
+    if (position === "andar" && andarBet + newBetValue > andarLimit) {
+      setErrorMessage("Andar Bet Limit Exceeded!");
+      setInsufficientBalance(true);
+      setTimeout(() => setInsufficientBalance(false), 3000);
+      return;
+    }
+
+    if (position === "bahar" && baharBet + newBetValue > baharLimit) {
+      setErrorMessage("Bahar Bet Limit Exceeded!");
+      setInsufficientBalance(true);
+      setTimeout(() => setInsufficientBalance(false), 3000);
+      return;
+    }
+
+    setInsufficientBalance(false);
+    placeCoin(position, selectedCoin); // pass coin object to placeCoin
   };
 
   const isBlurred =
@@ -117,9 +129,7 @@ function Box2({
 
   return (
     <div className="w-[90%] flex flex-col justify-end items-center px-2 sm:px-0 z-11">
-      {insufficientBalance && (
-        <Toast message={"Insufficient Balance!"} type={"error"} />
-      )}
+      {insufficientBalance && <Toast message={errorMessage} type={"error"} />}
       <div className="w-[80%] h-[70%] flex flex-col items-center">
         <div className="w-[80%] h-[80%] relative justify-center">
           {/* ANDAR section */}
@@ -186,6 +196,7 @@ function Box2({
             </div>
           </div>
 
+          {/* Coins */}
           {coinPositions.map((pos, index) => (
             <div
               key={index}
