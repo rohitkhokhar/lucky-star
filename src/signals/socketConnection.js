@@ -16,7 +16,7 @@ export const socketConnect = () => {
     });
 
     socket.on("connect", () => {
-      console.log("✅ Socket connected:", socket.id);
+      console.log("✅ Socket connected sokcet:", socket.id);
     });
 
     socket.on("connect_error", (err) => {
@@ -72,27 +72,27 @@ export const socketConnect = () => {
           }
           break;
 
-          case "GAME_ANNOUNCEMENT":
-            if (!data.err) {
-              if (data.data?.announcement_text) {
-                localStorage.setItem("wellcome_note", JSON.stringify(data?.data?.announcement_text));
-              }
-            } else {
-              console.error("❌ announcement failed:", data.msg);
-              alert(data.msg);
+        case "GAME_ANNOUNCEMENT":
+          if (!data.err) {
+            if (data.data?.announcement_text) {
+              localStorage.setItem("wellcome_note", JSON.stringify(data?.data?.announcement_text));
             }
-            break;
+          } else {
+            console.error("❌ announcement failed:", data.msg);
+            alert(data.msg);
+          }
+          break;
 
-          case "ONLINE_ROOM":
-            if (!data.err) {
-              if (data.data?.online_room_counter) {
-                localStorage.setItem("room_limit", JSON.stringify(data?.data?.online_room_counter));
-              }
-            } else {
-              console.error("❌ announcement failed:", data.msg);
-              alert(data.msg);
+        case "ONLINE_ROOM":
+          if (!data.err) {
+            if (data.data?.online_room_counter) {
+              localStorage.setItem("room_limit", JSON.stringify(data?.data?.online_room_counter));
             }
-            break;
+          } else {
+            console.error("❌ announcement failed:", data.msg);
+            alert(data.msg);
+          }
+          break;
 
         default:
           console.warn("⚠️ Unhandled event:", data.en);

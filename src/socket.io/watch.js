@@ -21,7 +21,7 @@ export function setupWatcher(videoElement) {
   });
 
   socket.on("connect", () => {
-    console.log("✅ Socket Connected:", socket.id);
+    console.log("✅ Socket Connected watch :", socket.id);
     socket.emit("watcher");
   });
 

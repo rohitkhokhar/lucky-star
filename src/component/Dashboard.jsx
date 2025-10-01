@@ -42,9 +42,14 @@ const Dashboard = () => {
 
   const handleLogout = () => {
     // Clear all relevant localStorage items
-    ["user", "authToken", "min_max_config", "total_wallet", "wellcome_note", "room_limit"].forEach(
-      (key) => localStorage.removeItem(key)
-    );
+    [
+      "user",
+      "authToken",
+      "min_max_config",
+      "total_wallet",
+      "wellcome_note",
+      "room_limit",
+    ].forEach((key) => localStorage.removeItem(key));
     window.location.href = "/Login";
   };
 
@@ -65,7 +70,8 @@ const Dashboard = () => {
 
     // Listen for storage changes across tabs
     const handleStorageChange = (e) => {
-      if (["wellcome_note", "room_limit"].includes(e.key)) updateFromLocalStorage();
+      if (["wellcome_note", "room_limit"].includes(e.key))
+        updateFromLocalStorage();
     };
     window.addEventListener("storage", handleStorageChange);
 
@@ -183,7 +189,10 @@ const Dashboard = () => {
               onClick={() => setShowWalletModal(true)}
               aria-label="Wallet"
             >
-              <FontAwesomeIcon icon={faWallet} className="text-2xl sm:text-3xl" />
+              <FontAwesomeIcon
+                icon={faWallet}
+                className="text-2xl sm:text-3xl"
+              />
             </button>
             <p className="mt-2 text-sm sm:text-lg font-semibold">
               Deposit & Withdrawal

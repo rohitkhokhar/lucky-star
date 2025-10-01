@@ -43,7 +43,7 @@ const App = () => {
   useEffect(() => {
     const connectAndRestart = () => {
       const socket = socketConnect();
-
+      socket.off("connect");
       socket.on("connect", () => {
         console.log("🟢 Socket fully connected, now sending RESTART_GAME");
         setSocketConnected(true);
