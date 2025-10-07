@@ -2,7 +2,7 @@ import React from "react";
 import ProgressBar from "./ProgressBar";
 
 function Box3({ data, isResult }) {
-  // Prepare the dots, pad with defaults if less than 26
+  // Prepare the dots, pad with defaults if less than 30
   const dots = Array.from({ length: 30 }, (_, i) => {
     const reversedCards = [...(data?.last_win_cards || [])].reverse();
     const row = reversedCards[i] || "dummy|default";
@@ -31,28 +31,25 @@ function Box3({ data, isResult }) {
         </div>
 
         <div className="w-full h-[40%] pr-3 grid grid-cols-15 gap-1 justify-end items-center">
-          {dots.map((value, index) => (
-            <div
-              key={index}
-              className={`flex items-center justify-center font-bold text-white rounded-2xl border-[1px] sm:border-[1px] ${
-                value === "bahar"
-                  ? "bg-[#AD1417] border-[#D02B2E]"
-                  : "bg-[#313131] border-[#4F4F4F]"
-              } ${
-                value === "bahar"
-                  ? "w-[20px] h-[20px] sm:w-[18px] sm:h-[18px] lg:w-[30px] lg:h-[30px]"
-                  : "w-[20px] h-[20px] sm:w-[18px] sm:h-[18px] lg:w-[30px] lg:h-[30px]"
-              } text-[0.5rem] sm:text-[0.7rem] lg:text-[0.9rem]`}
-              // style={{
-              //   fontSize:
-              //     value === "bahar"
-              //       ? "0.5rem" // red dots text size
-              //       : "0.5rem", // black dots text size
-              // }}
-            >
-              {value === "bahar" ? "B" : "A"}
-            </div>
-          ))}
+          {dots.map((value, index) => {
+            const isLatest = index === 0; // latest result
+            return (
+              <div
+                key={index}
+                className={`flex items-center justify-center font-bold text-white rounded-2xl border-[2px] sm:border-[2px]
+                  ${
+                    value === "bahar"
+                      ? "bg-[#AD1417] border-[#D02B2E]"
+                      : "bg-[#313131] border-[#4F4F4F]"
+                  }
+                  ${isLatest ? "border-green-500" : ""}
+                  w-[20px] h-[20px] sm:w-[18px] sm:h-[18px] lg:w-[30px] lg:h-[30px]
+                  text-[0.5rem] sm:text-[0.7rem] lg:text-[0.9rem]`}
+              >
+                {value === "bahar" ? "B" : "A"}
+              </div>
+            );
+          })}
         </div>
 
         {/* Added bet information display */}

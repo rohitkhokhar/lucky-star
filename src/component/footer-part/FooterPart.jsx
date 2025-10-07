@@ -293,6 +293,7 @@ function FooterPart() {
           setToastMessage("Round Started. Please Deal the Joker.");
           setToastType("info");
           setCoinPositions([]);
+          setPendingBets([]);
           localCoinPositions = [];
           setHasPlacedBet(false);
           setBetAmounts({ first: 0, second: 0, third: 0 });
@@ -390,6 +391,7 @@ function FooterPart() {
           setToastMessage("Round has ended. Preparing for the next round.");
           setToastType("info");
           setCoinPositions([]);
+          setPendingBets([]);
           localCoinPositions = [];
           setRoundBets({
             first: { andar: 0, bahar: 0 },
@@ -478,13 +480,18 @@ function FooterPart() {
           ];
         }
       });
-      setPendingBets((prev) => ({
-        ...prev,
-        [roundKey]: {
-          ...prev[roundKey],
-          [position]: (prev[roundKey][position] || 0) + selectedCoin.value,
-        },
-      }));
+      setPendingBets((prev) => {
+        const roundData = prev[roundKey] || {}; // ✅ fallback
+        const currentValue = roundData[position] || 0;
+
+        return {
+          ...prev,
+          [roundKey]: {
+            ...roundData,
+            [position]: currentValue + selectedCoin.value,
+          },
+        };
+      });
       setCoinHistory((prev) => [
         ...prev,
         { position, value: selectedCoin.value, roundKey },
@@ -655,6 +662,7 @@ function FooterPart() {
           ...prev,
           [roundKey]: { andar: 0, bahar: 0 },
         }));
+        console.log(pendingBets);
 
         // Mark coin history as confirmed
         setCoinHistory((prev) =>
