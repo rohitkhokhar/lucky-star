@@ -20,7 +20,7 @@ const formatNumber = (num, maxValue = null) => {
 function Box2({
   placeCoin,
   coinPositions,
-  selectedCoin, // <-- selected coin object { value, image }
+  selectedCoin,
   centerCard,
   gameState,
   data,
@@ -60,6 +60,37 @@ function Box2({
     };
   }, []);
 
+  const getRoundKeyFromGameState = (state) =>
+    state === "start_round_first_bet"
+      ? "first"
+      : state === "start_round_second_bet"
+        ? "second"
+        : state === "start_round_third_bet"
+          ? "third"
+          : null;
+
+  const currentRoundKey = getRoundKeyFromGameState(gameState);
+
+  // Only consider pending (unconfirmed) coins of the current round for new-bet limit checks
+  const pendingForCurrentRound = coinPositions.filter(
+    (p) => p.roundKey === currentRoundKey && !p.confirmed
+  );
+
+  const totalBetValue = pendingForCurrentRound.reduce(
+    (sum, p) => sum + (p.totalValue || 0),
+    0
+  );
+
+  const andarBet =
+    pendingForCurrentRound
+      .filter((p) => p.position === "andar")
+      .reduce((s, p) => s + p.totalValue, 0) || 0;
+
+  const baharBet =
+    pendingForCurrentRound
+      .filter((p) => p.position === "bahar")
+      .reduce((s, p) => s + p.totalValue, 0) || 0;
+
   const handlePlaceBet = (position) => {
     if (!selectedCoin) {
       setErrorMessage("Please select a coin!");
@@ -69,10 +100,9 @@ function Box2({
     }
 
     const currentBalance = total_wallet ?? userBalance ?? 0;
-    const totalBetValue = coinPositions.reduce(
-      (sum, pos) => sum + (pos.totalValue || 0),
-      0
-    );
+
+    const newBetValue = selectedCoin.value;
+
     const totalBetLimit =
       (data?.bet_limit_configs?.andar || 0) +
       (data?.bet_limit_configs?.bahar || 0);
@@ -80,14 +110,7 @@ function Box2({
     const andarLimit = data?.bet_limit_configs?.andar || 0;
     const baharLimit = data?.bet_limit_configs?.bahar || 0;
 
-    const andarBet =
-      coinPositions.find((p) => p.position === "andar")?.totalValue || 0;
-    const baharBet =
-      coinPositions.find((p) => p.position === "bahar")?.totalValue || 0;
-
-    const newBetValue = selectedCoin.value;
-
-    // ✅ Check balance
+    // Check balance: currentBalance is user's wallet; totalBetValue is only pending for this round
     if (totalBetValue + newBetValue > currentBalance) {
       setErrorMessage("Insufficient Balance!");
       setInsufficientBalance(true);
@@ -95,7 +118,7 @@ function Box2({
       return;
     }
 
-    // ✅ Check total table limit
+    // Check table limit
     if (totalBetValue + newBetValue > totalBetLimit) {
       setErrorMessage("Table Limit Exceeded!");
       setInsufficientBalance(true);
@@ -103,7 +126,7 @@ function Box2({
       return;
     }
 
-    // ✅ Check individual side limits
+    // Check individual side limits
     if (position === "andar" && andarBet + newBetValue > andarLimit) {
       setErrorMessage("Andar Bet Limit Exceeded!");
       setInsufficientBalance(true);
@@ -207,11 +230,10 @@ function Box2({
           {coinPositions.map((pos, index) => (
             <div
               key={index}
-              className={`coin-container  ${
-                pos.position === "andar"
+              className={`coin-container  ${pos.position === "andar"
                   ? "top-[17%] left-[53%]"
                   : "bottom-[10%] left-[53%]"
-              }`}
+                }`}
             >
               <div className="relative flex items-center justify-center">
                 <img

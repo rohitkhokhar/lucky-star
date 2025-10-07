@@ -293,7 +293,11 @@ function FooterPart() {
           setToastMessage("Round Started. Please Deal the Joker.");
           setToastType("info");
           setCoinPositions([]);
-          setPendingBets([]);
+          setPendingBets({
+            first: { andar: 0, bahar: 0 },
+            second: { andar: 0, bahar: 0 },
+            third: { andar: 0, bahar: 0 },
+          });
           localCoinPositions = [];
           setHasPlacedBet(false);
           setBetAmounts({ first: 0, second: 0, third: 0 });
@@ -330,10 +334,33 @@ function FooterPart() {
           setToastKey((prev) => prev + 1);
           break;
 
-        case "LIVE_GAME_BET_START":
+        case "LIVE_GAME_BET_START": {
           setGameState(data.game_state);
-          // setCoinPositions([]);
-          // localCoinPositions = [];
+          const currentRoundKey =
+            data.bet_no === "first_bet"
+              ? "first"
+              : data.bet_no === "second_bet"
+                ? "second"
+                : "third";
+
+          setCoinPositions((prev) =>
+            prev.filter(
+              (pos) => pos.confirmed === true || pos.roundKey === currentRoundKey
+            )
+          );
+
+          setCoinHistory((prev) =>
+            prev.filter(
+              (coin) => coin.confirmed === true || coin.roundKey === currentRoundKey
+            )
+          );
+
+          // Reset pending bets only for the current round
+          setPendingBets((prev) => ({
+            ...prev,
+            [currentRoundKey]: { andar: 0, bahar: 0 },
+          }));
+
           setBtnDisabled(false);
           setToastMessage(
             `${data.bet_no
@@ -344,6 +371,7 @@ function FooterPart() {
           setToastKey((prev) => prev + 1);
           setHasPlacedBet(false);
           break;
+        }
 
         case "LIVE_GAME_NO_MORE_BET":
           if (localCoinPositions.length > 0 || coinPositions.length > 0) {
@@ -480,12 +508,12 @@ function FooterPart() {
         } else {
           return [
             ...prev,
-            { coin: selectedCoin, position, totalValue: selectedCoin.value },
+            {coin: selectedCoin, position, totalValue: selectedCoin.value, roundKey, confirmed: false},
           ];
         }
       });
       setPendingBets((prev) => {
-        const roundData = prev[roundKey] || {}; // ✅ fallback
+        const roundData = prev[roundKey] || { andar: 0, bahar: 0 };
         const currentValue = roundData[position] || 0;
 
         return {
@@ -498,7 +526,7 @@ function FooterPart() {
       });
       setCoinHistory((prev) => [
         ...prev,
-        { position, value: selectedCoin.value, roundKey },
+        {position, value: selectedCoin.value, roundKey, confirmed: false},
       ]);
     } else {
       setToastMessage("Betting is not allowed at this stage.");
@@ -564,8 +592,7 @@ function FooterPart() {
       .reduce((sum, pos) => sum + pos.totalValue, 0);
   };
 
-  const placeBet = (selectedBet) => {
-    // 1️⃣ Check if betting is allowed at this stage
+  const placeBet = () => {
     if (
       gameState !== "start_round_first_bet" &&
       gameState !== "start_round_second_bet" &&
@@ -585,14 +612,10 @@ function FooterPart() {
         ? "second"
         : "third";
 
-    console.log("Current Round:", roundKey);
-
-    // 3️⃣ Get pending bets for this round
+    // ✅ Pull directly from pendingBets for current round
     const currentPending = pendingBets[roundKey] || { andar: 0, bahar: 0 };
-
-    // 4️⃣ Calculate total bets including new selection
-    const andarBet = (currentPending.andar || 0) + (selectedBet.andar || 0);
-    const baharBet = (currentPending.bahar || 0) + (selectedBet.bahar || 0);
+    const andarBet = currentPending.andar || 0;
+    const baharBet = currentPending.bahar || 0;
     const totalBet = andarBet + baharBet;
 
     if (totalBet <= 0) {
@@ -639,9 +662,7 @@ function FooterPart() {
       } else {
         // ✅ Bet approved
         setToastMessage(
-          `Bet Placed: ${andarBet > 0 ? `Andar ₹${andarBet} ` : ""}${
-            baharBet > 0 ? `Bahar ₹${baharBet}` : ""
-          }`.trim()
+          `Bet Placed: ${andarBet > 0 ? `Andar ₹${andarBet} ` : ""}${baharBet > 0 ? `Bahar ₹${baharBet}` : ""}`.trim()
         );
         setToastType("success");
         console.log("Bet successfully placed:", totalBet);
@@ -668,12 +689,19 @@ function FooterPart() {
         }));
         console.log(pendingBets);
 
-        // Mark coin history as confirmed
+        // mark coinHistory entries as confirmed (you already do this)
         setCoinHistory((prev) =>
           prev.map((coin) =>
             coin.roundKey === roundKey ? { ...coin, confirmed: true } : coin
           )
         );
+
+        setCoinPositions((prev) =>
+          prev.map((pos) =>
+            pos.roundKey === roundKey ? { ...pos, confirmed: true } : pos
+          )
+        );
+
       }
 
       // Trigger toast update
