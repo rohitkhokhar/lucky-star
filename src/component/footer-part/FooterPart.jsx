@@ -382,6 +382,10 @@ function FooterPart() {
             second: { andar: 0, bahar: 0 },
             third: { andar: 0, bahar: 0 },
           });
+          setData((prev) => ({
+            ...prev,
+            last_win_cards: data?.last_win_cards,
+          }));
           setCoinHistory([]);
           setToastKey((prev) => prev + 1);
           break;
