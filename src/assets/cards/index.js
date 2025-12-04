@@ -54,6 +54,20 @@ import F11 from './F-11.png';
 import F12 from './F-12.png';
 import F13 from './F-13.png';
 
+import C1 from './F-1.png';
+import C2 from './F-2.png';
+import C3 from './F-3.png';
+import C4 from './F-4.png';
+import C5 from './F-5.png';
+import C6 from './F-6.png';
+import C7 from './F-7.png';
+import C8 from './F-8.png';
+import C9 from './F-9.png';
+import C10 from './F-10.png';
+import C11 from './F-11.png';
+import C12 from './F-12.png';
+import C13 from './F-13.png';
+
 const cardImages = {
   'S-1': S1,
   'S-2': S2,
@@ -96,6 +110,21 @@ const cardImages = {
   'D-11': D11,
   'D-12': D12,
   'D-13': D13,
+
+
+  'C-1': C1,
+  'C-2': C2,
+  'C-3': C3,
+  'C-4': C4,
+  'C-5': C5,
+  'C-6': C6,
+  'C-7': C7,
+  'C-8': C8,
+  'C-9': C9,
+  'C-10': C10,
+  'C-11': C11,
+  'C-12': C12,
+  'C-13': C13,
 
   'F-1': F1,
   'F-2': F2,
