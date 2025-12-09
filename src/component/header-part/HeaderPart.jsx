@@ -150,19 +150,19 @@ function HeaderPart({ muted, setMuted }) {
                       Ticket ID
                     </th>
                     <th className="px-4 py-2 text-left font-semibold text-gray-600">
+                      Joker Card
+                    </th>
+                    <th className="px-4 py-2 text-left font-semibold text-gray-600">
                       Result Card
                     </th>
                     <th className="px-4 py-2 text-left font-semibold text-gray-600">
                       Draw Time
                     </th>
-                    <th className="px-4 py-2 text-right font-semibold text-gray-600">
+                    <th className="px-4 py-2 text-center font-semibold text-gray-600">
                       Bet Amount
                     </th>
                     <th className="px-4 py-2 text-center font-semibold text-gray-600">
                       Win Amount
-                    </th>
-                    <th className="px-4 py-2 text-center font-semibold text-gray-600">
-                      Last Card Throw
                     </th>
                   </tr>
                 </thead>
@@ -172,6 +172,20 @@ function HeaderPart({ muted, setMuted }) {
                       <td className="px-4 py-2">{item.ticket_id}</td>
                       {/* <td className="px-3 py-2">{item.total_bet_amount}</td>
                     <td className="px-3 py-2">{item.total_win_amount}</td> */}
+                      <td className="px-3 py-2">
+                        {item.center_card && (
+                          <>
+                            <img
+                              src={
+                                cardImages[
+                                  item.center_card.split(" ")[0].toUpperCase()
+                                ]
+                              }
+                              style={{ width: "30px", height: "auto" }}
+                            />
+                          </>
+                        )}
+                      </td>
                       <td className="px-3 py-2 flex items-center gap-2">
                         {item.result_card && (
                           <>
@@ -187,7 +201,7 @@ function HeaderPart({ muted, setMuted }) {
                           </>
                         )}
                       </td>
-                      <td className="px-4 py-2">
+                      <td className="px-4 py-2 items-end">
                         {new Date(item.draw_time).toLocaleDateString("en-GB")}{" "}
                         {new Date(item.draw_time).toLocaleTimeString("en-GB", {
                           hour: "2-digit",
@@ -199,11 +213,11 @@ function HeaderPart({ muted, setMuted }) {
                           item.total_win_amount - item.total_bet_amount < 0
                             ? "text-gray-500"
                             : "text-yellow-600"
-                        }`}
+                        } text-center `}
                       >
                         {item.total_bet_amount || 0}
                       </td>
-                      <td className="px-4 py-2">{item.total_win_amount}</td>
+                      <td className="px-4 py-2 text-center">{item.total_win_amount}</td>
                     </tr>
                   ))}
                   {gameList.length === 0 && (
