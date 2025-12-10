@@ -32,21 +32,33 @@ function Box3({ data, isResult }) {
 
         <div className="w-full h-[40%] pr-3 grid grid-cols-15 gap-1 justify-end items-center">
           {dots.map((value, index) => {
-            const isLatest = index === 0; // latest result
+            const isLatest = index === 0;
+
+            // Normalize
+            const val = value?.toLowerCase();
+
+            // Decide label + color
+            let label = "•";
+            let classes = "border-none"; // default gray
+
+            if (val === "bahar") {
+              label = "B";
+              classes = "bg-[#AD1417] border-[#D02B2E]";
+            } else if (val === "andar") {
+              label = "A";
+              classes = "bg-[#313131] border-[#4F4F4F]";
+            }
+
             return (
               <div
                 key={index}
-                className={`flex items-center justify-center font-bold text-white rounded-2xl border-[2px] sm:border-[2px]
-                  ${
-                    value === "bahar"
-                      ? "bg-[#AD1417] border-[#D02B2E]"
-                      : "bg-[#313131] border-[#4F4F4F]"
-                  }
-                  ${isLatest ? "border-green-500" : ""}
-                  w-[20px] h-[20px] sm:w-[18px] sm:h-[18px] lg:w-[30px] lg:h-[30px]
-                  text-[0.5rem] sm:text-[0.7rem] lg:text-[0.9rem]`}
+                className={`flex items-center justify-center font-bold text-white rounded-2xl border-[2px]
+                        ${classes}
+                        ${isLatest ? "border-green-500" : ""}
+                        w-[20px] h-[20px] sm:w-[18px] sm:h-[18px] lg:w-[30px] lg:h-[30px]
+                        text-[0.5rem] sm:text-[0.7rem] lg:text-[0.9rem]`}
               >
-                {value === "bahar" ? "B" : "A"}
+                {label}
               </div>
             );
           })}
