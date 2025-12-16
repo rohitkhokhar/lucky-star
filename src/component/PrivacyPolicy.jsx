@@ -3,8 +3,8 @@ import { Link } from "react-router-dom";
 
 function PrivacyPolicy() {
   return (
-    <div className="min-h-screen bg-black text-white px-4 py-8">
-      <div className="max-w-4xl mx-auto bg-gray-900 rounded-2xl shadow-lg p-6 md:p-10">
+    <div className="min-h-screen bg-black text-white px-4 py-4">
+      <div className="shadow-lg p-6 md:p-5">
 
         {/* HEADER */}
         <h1 className="text-3xl font-bold text-center mb-2">
@@ -151,20 +151,6 @@ function PrivacyPolicy() {
             luckystarlivegame@gmail.com
           </a>
         </p>
-
-        {/* FOOTER */}
-        <p className="mt-8 text-center text-sm text-gray-400">
-          © Andar Bahar Live Game
-        </p>
-
-        <div className="text-center mt-4">
-          <Link
-            to="/"
-            className="text-purple-400 hover:underline text-sm"
-          >
-            ← Back to Login
-          </Link>
-        </div>
       </div>
     </div>
   );

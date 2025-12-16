@@ -9,6 +9,7 @@ import {
   getSocket,
 } from "../signals/socketConnection";
 import { setUser } from "../redux/authSlice";
+import TermsAndConditions from "./TermsAndConditions";
 
 function Login() {
   const [loginForm, setLoginForm] = useState({
@@ -16,13 +17,13 @@ function Login() {
     password: "",
   });
 
-  const [otpSent, setOtpSent] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [supportNumber, setsupportNumber] = useState("");
-  const [agree, setAgree] = useState(false); // ✅ checkbox state
 
-  const user = JSON.parse(localStorage.getItem("user")) ?? null;
-  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+  // 🔥 popup states
+  const [showPolicyPopup, setShowPolicyPopup] = useState(false);
+  const [pendingLogin, setPendingLogin] = useState(false);
+
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -35,10 +36,8 @@ function Login() {
     if (!socket) return;
 
     const handleSettings = (data) => {
-      if (data.en === "SETTING") {
-        if (!data.err) {
-          setsupportNumber(data.data.support_number);
-        }
+      if (data.en === "SETTING" && !data.err) {
+        setsupportNumber(data.data.support_number);
       }
     };
 
@@ -46,41 +45,52 @@ function Login() {
     return () => socket.off("res", handleSettings);
   }, []);
 
+  // 🔹 FORM SUBMIT (only open popup)
   const onFormSubmit = (e) => {
     e.preventDefault();
     setErrorMessage("");
 
-    // ✅ checkbox validation
-    if (!agree) {
-      setErrorMessage(
-        "Please accept Privacy Policy & Terms and Conditions."
-      );
+    if (!loginForm.mobile_number || !loginForm.password) {
+      setErrorMessage("Please enter mobile number and password.");
       return;
     }
 
-    if (loginForm.password && loginForm.mobile_number) {
-      sendEvent("LOGIN", loginForm);
+    setPendingLogin(true);
+    setShowPolicyPopup(true);
+  };
 
-      const socket = getSocket();
-      if (socket) {
-        socket.on("res", (data) => {
-          if (data.en === "AppLunchDetails") {
-            if (!data.err) {
-              localStorage.setItem("user", JSON.stringify(data.data));
-              localStorage.setItem(
-                "authToken",
-                JSON.stringify(data?.data?.relogin_token ?? "")
-              );
-              navigate("/Dashboard");
-            } else {
-              setErrorMessage(data.msg || "Login failed.");
-            }
-          }
-        });
+  // 🔹 ACCEPT POLICY → LOGIN
+  const handleAccept = () => {
+    setShowPolicyPopup(false);
+
+    if (!pendingLogin) return;
+
+    sendEvent("LOGIN", loginForm);
+
+    const socket = getSocket();
+    if (!socket) return;
+
+    socket.on("res", (data) => {
+      if (data.en === "AppLunchDetails") {
+        if (!data.err) {
+          localStorage.setItem("user", JSON.stringify(data.data));
+          localStorage.setItem(
+            "authToken",
+            JSON.stringify(data?.data?.relogin_token ?? "")
+          );
+          navigate("/Dashboard");
+        } else {
+          setErrorMessage(data.msg || "Login failed.");
+        }
       }
-    } else {
-      setErrorMessage("Please enter mobile number and password.");
-    }
+    });
+  };
+
+  // 🔹 DECLINE POLICY → BLOCK LOGIN
+  const handleDecline = () => {
+    setShowPolicyPopup(false);
+    setPendingLogin(false);
+    setErrorMessage("You must accept Privacy Policy & Terms to login.");
   };
 
   const onChangeFormData = (e) => {
@@ -89,96 +99,56 @@ function Login() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-black text-white overflow-y-auto">
-      <div className="container mx-auto p-5">
-        <div className="flex md:flex-row bg-opacity-90 rounded-2xl overflow-hidden shadow-lg p-10 md:p-16 bg-gray-800">
-          
-          {/* LEFT IMAGE */}
-          <div className="w-full md:w-1/2 flex justify-center items-center">
-            <img
-              src={Quads_A}
-              alt="Live Game"
-              className="w-3/4 md:w-1/2"
-            />
-          </div>
+    <>
+      <div className="flex items-center justify-center min-h-screen bg-black text-white">
+        <div className="container mx-auto p-5">
+          <div className="flex md:flex-row bg-gray-800 rounded-2xl p-10 md:p-16 shadow-lg">
 
-          {/* RIGHT LOGIN FORM */}
-          <div className="w-full md:w-1/2 flex flex-col justify-center text-center md:text-left">
-              <p className="text-lg text-center text-white">
+            {/* LEFT IMAGE */}
+            <div className="w-full md:w-1/2 flex justify-center items-center">
+              <img src={Quads_A} alt="Live Game" className="w-3/4 md:w-1/2" />
+            </div>
+
+            {/* LOGIN FORM */}
+            <div className="w-full md:w-1/2">
+              <p className="text-center text-sm mb-3">
                 For Amusement Purpose Only
               </p>
-              
-            <h1 className="text-3xl font-bold mb-6">Login</h1>
 
-            {errorMessage && (
-              <div className="mb-4 text-red-500">{errorMessage}</div>
-            )}
+              <h1 className="text-3xl font-bold mb-6">Login</h1>
 
-            <form onSubmit={onFormSubmit} className="mb-6">
-              <input
-                type="text"
-                name="mobile_number"
-                placeholder="Phone Number"
-                value={loginForm.mobile_number}
-                onChange={onChangeFormData}
-                className="w-full p-3 rounded-lg bg-transparent border border-white placeholder-white focus:outline-none mb-4"
-                required
-              />
+              {errorMessage && (
+                <div className="text-red-500 mb-4">{errorMessage}</div>
+              )}
 
-              <input
-                type="password"
-                name="password"
-                placeholder="Enter Password"
-                value={loginForm.password}
-                onChange={onChangeFormData}
-                className="w-full p-3 rounded-lg bg-transparent border border-white placeholder-white focus:outline-none mb-4"
-                required
-              />
-
-              {/* ✅ PRIVACY & TERMS CHECKBOX */}
-              <div className="flex items-start gap-2 text-sm text-left mt-2">
+              <form onSubmit={onFormSubmit}>
                 <input
-                  type="checkbox"
-                  checked={agree}
-                  onChange={(e) => setAgree(e.target.checked)}
-                  className="mt-1 accent-purple-600"
+                  type="text"
+                  name="mobile_number"
+                  placeholder="Phone Number"
+                  value={loginForm.mobile_number}
+                  onChange={onChangeFormData}
+                  className="w-full p-3 mb-4 rounded bg-transparent border border-white"
                 />
-                <p className="text-gray-300">
-                  I agree to the{" "}
-                  <Link
-                    to="/privacy-policy"
-                    className="text-purple-400 hover:underline"
-                  >
-                    Privacy Policy
-                  </Link>{" "}
-                  and{" "}
-                  <Link
-                    to="/terms-and-conditions"
-                    className="text-purple-400 hover:underline"
-                  >
-                    Terms and Conditions
-                  </Link>
-                </p>
-              </div>
 
-              {/* LOGIN BUTTON */}
-              <button
-                type="submit"
-                disabled={!agree}
-                className={`w-full mt-6 font-bold py-3 rounded-lg transition duration-300
-                  ${
-                    agree
-                      ? "bg-purple-600 hover:bg-purple-700"
-                      : "bg-gray-500 cursor-not-allowed"
-                  }`}
-              >
-                Login
-              </button>
+                <input
+                  type="password"
+                  name="password"
+                  placeholder="Password"
+                  value={loginForm.password}
+                  onChange={onChangeFormData}
+                  className="w-full p-3 mb-4 rounded bg-transparent border border-white"
+                />
 
-            </form>
+                <button
+                  type="submit"
+                  className="w-full bg-purple-600 hover:bg-purple-700 py-3 rounded font-bold"
+                >
+                  Login
+                </button>
+              </form>
 
-            {/* SIGNUP + FORGOT */}
-            <div className="flex justify-between text-sm">
+              <div className="flex justify-between text-sm mt-4">
               <p>
                 Don't have an account?{" "}
                 <Link
@@ -189,7 +159,14 @@ function Login() {
                 </Link>
               </p>
 
-              {supportNumber && (
+              <p className="text-gray-400 text-sm text-center">
+                <span className="text-purple-400"><Link
+                    to="/privacy-policy">Privacy Policy</Link></span> |{" "}
+                <span className="text-purple-400"><Link
+                    to="/terms-and-conditions">Terms & Conditions</Link></span>
+              </p>
+
+              {/* {supportNumber && (
                 <a
                   href={`https://wa.me/${supportNumber}`}
                   target="_blank"
@@ -198,12 +175,41 @@ function Login() {
                 >
                   Forgot password?
                 </a>
-              )}
+              )} */}
+            </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+
+      {/* 🔥 PRIVACY & TERMS POPUP */}
+      {showPolicyPopup && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-70 flex items-center justify-center">
+          <div className="bg-gray-900 text-white rounded-xl w-11/12 md:w-2/3 p-4 max-h-[80vh] overflow-y-auto">
+            <div className="text-sm text-gray-300 max-h-[50vh] overflow-y-auto">
+              <PrivacyPolicy />
+              <TermsAndConditions />
+            </div>
+
+            <div className="flex gap-4 mt-6">
+              <button
+                onClick={handleDecline}
+                className="w-1/2 bg-red-600 hover:bg-red-700 py-3 rounded"
+              >
+                Decline
+              </button>
+
+              <button
+                onClick={handleAccept}
+                className="w-1/2 bg-purple-600 hover:bg-purple-700 py-3 rounded"
+              >
+                Accept & Continue
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
