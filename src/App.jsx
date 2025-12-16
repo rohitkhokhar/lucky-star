@@ -9,6 +9,8 @@ import RotateScreenWarning from "./component/RotateWarning";
 import Login from "./component/Login";
 import HorizontalDesign from "./component/HorizontalDesign";
 import Signup from "./component/Signup";
+import PrivacyPolicy from "./component/PrivacyPolicy";
+import TermsAndConditions from "./component/TermsAndConditions";
 import Process from "./component/Process";
 import Dashboard from "./component/Dashboard";
 import Profile from "./component/Profile";
@@ -102,6 +104,8 @@ const App = () => {
           path="/"
           element={isAuth ? <Navigate to="/Dashboard" replace /> : <Index />}
         />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
         <Route
           path="/Login"
           element={isAuth ? <Navigate to="/Dashboard" replace /> : <Login />}
