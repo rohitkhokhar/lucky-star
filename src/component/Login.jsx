@@ -10,6 +10,7 @@ import {
 } from "../signals/socketConnection";
 import { setUser } from "../redux/authSlice";
 import TermsAndConditions from "./TermsAndConditions";
+import PopupMessage from './PopupMessage'
 
 function Login() {
   const [loginForm, setLoginForm] = useState({
@@ -103,7 +104,6 @@ function Login() {
       <div className="flex items-center justify-center min-h-screen bg-black text-white">
         <div className="container mx-auto p-5">
           <div className="flex md:flex-row bg-gray-800 rounded-2xl p-10 md:p-16 shadow-lg">
-
             {/* LEFT IMAGE */}
             <div className="w-full md:w-1/2 flex justify-center items-center">
               <img src={Quads_A} alt="Live Game" className="w-3/4 md:w-1/2" />
@@ -149,24 +149,27 @@ function Login() {
               </form>
 
               <div className="flex justify-between text-sm mt-4">
-              <p>
-                Don't have an account?{" "}
-                <Link
-                  to="/signup"
-                  className="text-purple-400 hover:text-purple-500"
-                >
-                  Sign Up!
-                </Link>
-              </p>
+                <p>
+                  Don't have an account?{" "}
+                  <Link
+                    to="/signup"
+                    className="text-purple-400 hover:text-purple-500"
+                  >
+                    Sign Up!
+                  </Link>
+                </p>
 
-              <p className="text-gray-400 text-sm text-center">
-                <span className="text-purple-400"><Link
-                    to="/privacy-policy">Privacy Policy</Link></span> |{" "}
-                <span className="text-purple-400"><Link
-                    to="/terms-and-conditions">Terms & Conditions</Link></span>
-              </p>
+                <p className="text-gray-400 text-sm text-center">
+                  <span className="text-purple-400">
+                    <Link to="/privacy-policy">Privacy Policy</Link>
+                  </span>{" "}
+                  |{" "}
+                  <span className="text-purple-400">
+                    <Link to="/terms-and-conditions">Terms & Conditions</Link>
+                  </span>
+                </p>
 
-              {/* {supportNumber && (
+                {/* {supportNumber && (
                 <a
                   href={`https://wa.me/${supportNumber}`}
                   target="_blank"
@@ -176,19 +179,17 @@ function Login() {
                   Forgot password?
                 </a>
               )} */}
-            </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* 🔥 PRIVACY & TERMS POPUP */}
       {showPolicyPopup && (
         <div className="fixed inset-0 z-50 bg-black bg-opacity-70 flex items-center justify-center">
           <div className="bg-gray-900 text-white rounded-xl w-11/12 md:w-2/3 p-4 max-h-[80vh] overflow-y-auto">
             <div className="text-sm text-gray-300 max-h-[50vh] overflow-y-auto">
-              <PrivacyPolicy />
-              <TermsAndConditions />
+              <PopupMessage/>
             </div>
 
             <div className="flex gap-4 mt-6">
@@ -203,7 +204,7 @@ function Login() {
                 onClick={handleAccept}
                 className="w-1/2 bg-purple-600 hover:bg-purple-700 py-3 rounded"
               >
-                Accept & Continue
+                Accept
               </button>
             </div>
           </div>
