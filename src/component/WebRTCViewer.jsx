@@ -18,6 +18,7 @@ const WebRTCViewer = ({ muted }) => {
     }
   }, []);
 
+
   // Optional: Update video/canvas size on window resize
   useEffect(() => {
     const handleResize = () => {
