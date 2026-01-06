@@ -340,18 +340,20 @@ function FooterPart() {
             data.bet_no === "first_bet"
               ? "first"
               : data.bet_no === "second_bet"
-                ? "second"
-                : "third";
+              ? "second"
+              : "third";
 
           setCoinPositions((prev) =>
             prev.filter(
-              (pos) => pos.confirmed === true || pos.roundKey === currentRoundKey
+              (pos) =>
+                pos.confirmed === true || pos.roundKey === currentRoundKey
             )
           );
 
           setCoinHistory((prev) =>
             prev.filter(
-              (coin) => coin.confirmed === true || coin.roundKey === currentRoundKey
+              (coin) =>
+                coin.confirmed === true || coin.roundKey === currentRoundKey
             )
           );
 
@@ -399,9 +401,38 @@ function FooterPart() {
 
         case "LIVE_GAME_WINNER":
           setGameState(data.game_state);
-          setToastMessage(
-            `Winner declared! Winning side: ${data.win_side.toUpperCase()}.`
-          );
+          setToastMessage(() => {
+            const winSide = data.win_side.toLowerCase();
+            const isFirstBet = data.bet_no === "first_bet";
+
+            if (winSide === "bahar") {
+              return (
+                <>
+                  <strong>Winner Declared!</strong>
+                  <br />
+                  Winning side: <strong>BAHAR</strong>
+                  <br />
+                  {isFirstBet
+                    ? "First Shoot Bahar - 25%"
+                    : "Second Shoot Bahar - 25%"}
+                </>
+              );
+            }
+
+            // ANDAR
+            return (
+              <>
+                <strong>Winner Declared!</strong>
+                <br />
+                Winning side: <strong>ANDAR</strong>
+                <br />
+                {isFirstBet
+                  ? "First Shoot Andar - 100%"
+                  : "Second Shoot Andar - 100%"}
+              </>
+            );
+          });
+
           setToastType("success");
           setCoinPositions([]);
           localCoinPositions = [];
@@ -508,7 +539,13 @@ function FooterPart() {
         } else {
           return [
             ...prev,
-            {coin: selectedCoin, position, totalValue: selectedCoin.value, roundKey, confirmed: false},
+            {
+              coin: selectedCoin,
+              position,
+              totalValue: selectedCoin.value,
+              roundKey,
+              confirmed: false,
+            },
           ];
         }
       });
@@ -526,7 +563,7 @@ function FooterPart() {
       });
       setCoinHistory((prev) => [
         ...prev,
-        {position, value: selectedCoin.value, roundKey, confirmed: false},
+        { position, value: selectedCoin.value, roundKey, confirmed: false },
       ]);
     } else {
       setToastMessage("Betting is not allowed at this stage.");
@@ -662,7 +699,9 @@ function FooterPart() {
       } else {
         // ✅ Bet approved
         setToastMessage(
-          `Bet Placed: ${andarBet > 0 ? `Andar ₹${andarBet} ` : ""}${baharBet > 0 ? `Bahar ₹${baharBet}` : ""}`.trim()
+          `Bet Placed: ${andarBet > 0 ? `Andar ₹${andarBet} ` : ""}${
+            baharBet > 0 ? `Bahar ₹${baharBet}` : ""
+          }`.trim()
         );
         setToastType("success");
         console.log("Bet successfully placed:", totalBet);
@@ -701,7 +740,6 @@ function FooterPart() {
             pos.roundKey === roundKey ? { ...pos, confirmed: true } : pos
           )
         );
-
       }
 
       // Trigger toast update
