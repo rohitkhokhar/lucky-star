@@ -100,7 +100,7 @@ function FooterPart() {
       const { en, data } = response;
 
       if (en === "UPDATED_WALLET") {
-        console.log("UPDATED_WALLET#####", data.total_wallet);
+        //console.log("UPDATED_WALLET#####", data.total_wallet);
         localStorage.setItem("total_wallet", JSON.stringify(data.total_wallet));
         setUserBalance(data.total_wallet);
         if (user) {
@@ -275,7 +275,7 @@ function FooterPart() {
 
           const andar1 = data.total_bet_on_cards?.andar || 0;
           const bahar1 = data.total_bet_on_cards?.bahar || 0;
-          console.log({ andar1, bahar1 });
+          //console.log({ andar1, bahar1 });
           setData((prev) => ({
             ...prev,
             total_bet_on_cards: data.total_bet_on_cards,
@@ -399,55 +399,72 @@ function FooterPart() {
           setToastKey((prev) => prev + 1);
           break;
 
-        case "LIVE_GAME_WINNER":
-          setGameState(data.game_state);
-          setToastMessage(() => {
-            const winSide = data.win_side.toLowerCase();
-            const isFirstBet = data.bet_no === "first_bet";
+          case "LIVE_GAME_WINNER":
+  setGameState(data.game_state);
 
-            if (winSide === "bahar") {
-              return (
-                <>
-                  <strong>Winner Declared!</strong>
-                  <br />
-                  Winning side: <strong>BAHAR</strong>
-                  <br />
-                  {isFirstBet
-                    ? "First Shoot Bahar - 25%"
-                    : "Second Shoot Bahar - 25%"}
-                </>
-              );
-            }
+  setToastMessage(() => {
+    const winSide = data.win_side.toLowerCase();
+    const isFirstBet = data.bet_no === "first_bet";
+    const isSecondBet = data.bet_no === "second_bet";
 
-            // ANDAR
-            return (
-              <>
-                <strong>Winner Declared!</strong>
-                <br />
-                Winning side: <strong>ANDAR</strong>
-                <br />
-                {isFirstBet
-                  ? "First Shoot Andar - 100%"
-                  : "Second Shoot Andar - 100%"}
-              </>
-            );
-          });
+    const isInitialTwoCardsWin =
+      isSecondBet && data.win_round === "second_bet";
 
-          setToastType("success");
-          setCoinPositions([]);
-          localCoinPositions = [];
-          setRoundBets({
-            first: { andar: 0, bahar: 0 },
-            second: { andar: 0, bahar: 0 },
-            third: { andar: 0, bahar: 0 },
-          });
-          setData((prev) => ({
-            ...prev,
-            last_win_cards: data?.last_win_cards,
-          }));
-          setCoinHistory([]);
-          setToastKey((prev) => prev + 1);
-          break;
+    return (
+      <>
+        <strong>Winner Declared!</strong>
+        <br />
+        Winning side: <strong>{winSide.toUpperCase()}</strong>
+        <br />
+
+        {/* FIRST BET */}
+        {isFirstBet && (
+          <>
+            {winSide === "bahar"
+              ? "First Shoot Bahar - 25%"
+              : "First Shoot Andar - 100%"}
+          </>
+        )}
+
+        {/* SECOND BET – INITIAL 2 CARDS */}
+        {isInitialTwoCardsWin && (
+          <>
+            {winSide === "bahar"
+              ? "Second Shoot Bahar - 25%"
+              : "Second Shoot Andar - 100%"}
+          </>
+        )}
+
+        {/* SECOND BET – AFTER INITIAL 2 CARDS */}
+        {isSecondBet && !isInitialTwoCardsWin && (
+          <>
+            {winSide === "bahar"
+              ? "Second Shoot Bahar Win"
+              : "Second Shoot Andar Win"}
+          </>
+        )}
+      </>
+    );
+  });
+
+  setToastType("success");
+  setCoinPositions([]);
+  localCoinPositions = [];
+  setRoundBets({
+    first: { andar: 0, bahar: 0 },
+    second: { andar: 0, bahar: 0 },
+    third: { andar: 0, bahar: 0 },
+  });
+
+  setData((prev) => ({
+    ...prev,
+    last_win_cards: data?.last_win_cards,
+  }));
+
+  setCoinHistory([]);
+  setToastKey((prev) => prev + 1);
+  break;  
+
 
         case "LIVE_GAME_END_ROUND":
           setGameState(data.game_state);
@@ -686,7 +703,7 @@ function FooterPart() {
 
     // 5️⃣ Handle server response
     const handlePlaceBetResponse = (response) => {
-      console.log("Server Response:", response);
+      //console.log("Server Response:", response);
 
       // Make event check case-insensitive
       if (!response.en || response.en.toLowerCase() !== "live_game_place_bet")
@@ -704,7 +721,7 @@ function FooterPart() {
           }`.trim()
         );
         setToastType("success");
-        console.log("Bet successfully placed:", totalBet);
+        //console.log("Bet successfully placed:", totalBet);
 
         // Update bet amounts for this round
         setBetAmounts((prev) => ({
@@ -726,7 +743,7 @@ function FooterPart() {
           ...prev,
           [roundKey]: { andar: 0, bahar: 0 },
         }));
-        console.log(pendingBets);
+        //console.log(pendingBets);
 
         // mark coinHistory entries as confirmed (you already do this)
         setCoinHistory((prev) =>

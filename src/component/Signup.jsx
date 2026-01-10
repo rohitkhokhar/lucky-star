@@ -24,7 +24,7 @@ function Signup() {
       socket.on("res", (data) => {
         if (data.en === "AppLunchDetails") {
           if (!data.err) {
-            console.log("✅ Received AppLunchDetails:", data.data);
+            //console.log("✅ Received AppLunchDetails:", data.data);
             navigate("/login"); // Redirect to login on successful AppLunchDetails
           } else {
             console.error("❌ Error in AppLunchDetails:", data.msg);

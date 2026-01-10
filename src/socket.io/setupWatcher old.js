@@ -74,7 +74,7 @@ export const setupWatcher = (videoElement, setIsLoading = () => { }) => {
   });
 
   peer.on("open", (id) => {
-    console.log("[webrtc] Viewer peer id:", id);
+    //console.log("[webrtc] Viewer peer id:", id);
     peerReady = true;
     // If broadcast already started, join now
     if (roomId && !isStream) {
@@ -89,12 +89,12 @@ export const setupWatcher = (videoElement, setIsLoading = () => { }) => {
   });
 
   socket.on("connect", () => {
-    console.log("[webrtc] Socket connected");
+    //console.log("[webrtc] Socket connected");
     socket.emit("viwer_connected", {});
   });
 
   socket.on("broadcast_started", (room) => {
-    console.log("[webrtc] Broadcast started:", room, new Date());
+    //console.log("[webrtc] Broadcast started:", room, new Date());
     roomId = room;
     if (peerReady && !isStream) {
       ViewStream(videoElement, setIsLoading);
@@ -102,7 +102,7 @@ export const setupWatcher = (videoElement, setIsLoading = () => { }) => {
   });
 
   socket.on("broadcast_disconnect", () => {
-    console.log("[webrtc] Broadcast disconnected");
+    //console.log("[webrtc] Broadcast disconnected");
     videoElement.srcObject = createSilentStream(videoElement);
     if (call) call.close();
     call = null;
@@ -110,7 +110,7 @@ export const setupWatcher = (videoElement, setIsLoading = () => { }) => {
   });
 
   socket.on("disconnect", () => {
-    console.log("[webrtc] Socket disconnected");
+    //console.log("[webrtc] Socket disconnected");
   });
 
   window.addEventListener("beforeunload", () => {
@@ -138,7 +138,7 @@ const ViewStream = (videoElement, setIsLoading) => {
   setIsLoading(false);
 
   call.on("stream", (remoteStream) => {
-    console.log("[webrtc] Remote stream received");
+    //console.log("[webrtc] Remote stream received");
     videoElement.srcObject = remoteStream;
     videoElement.muted = true;
 
@@ -151,7 +151,7 @@ const ViewStream = (videoElement, setIsLoading) => {
   });
 
   call.on("close", () => {
-    console.log("[webrtc] Viewer call closed");
+    //console.log("[webrtc] Viewer call closed");
     isStream = false;
     setIsLoading(true);
     // 🔁 retry in case broadcaster still active

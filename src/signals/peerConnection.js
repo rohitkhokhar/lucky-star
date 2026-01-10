@@ -3,7 +3,7 @@ import { Peer } from "peerjs";
 
 let socket;
 export const peerConnection = async (room_id) => {
-  console.log("peerConnection :: IN");
+  //console.log("peerConnection :: IN");
 
   // const url = "https://llive.europainfotech.com/";
   // const url = "https://llive-socket.europainfotech.com/";
@@ -18,18 +18,18 @@ export const peerConnection = async (room_id) => {
   // socket = io.connect(url, { transports: ["websocket"] });
 
   socket.on("connect", (res) => {
-    console.log("connect: : ", res);
-    console.log("connect: peer : socket: ", socket);
+    //console.log("connect: : ", res);
+    //console.log("connect: peer : socket: ", socket);
 
     // start watcher
     // socket.emit("watcher");
     // next(socket.connected);
   });
   socket.on("error", (res) => {
-    console.log("connect: error: ", res);
+    //console.log("connect: error: ", res);
   });
   socket.on('open', id => {
-    console.log("open: id :", id)
+    //console.log("open: id :", id)
     // document.getElementById('peer-id').value = id;
     // this.joinRoom(room_id)
     // is_start_viwer = true

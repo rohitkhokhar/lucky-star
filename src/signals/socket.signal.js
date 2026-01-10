@@ -14,11 +14,11 @@ export const socket = io(SOCKET_URL, {
 
 // Event Listeners
 socket.on("connect", () => {
-  console.log("connect: Socket connected:", socket.id);
+  //console.log("connect: Socket connected:", socket.id);
 });
 
 // socket.on("message", (data) => {
-//   console.log("Message received:", data);
+//   //console.log("Message received:", data);
 //   socketData.value = data; // Signal ko update karein
 // });
 

@@ -42,22 +42,22 @@ const createEmptyVideoTrack = (videoElement) => {
 
 // === Setup Watcher ===
 export const setupWatcher = (videoElement, loaderElement = null) => {
-  console.log("webrtc: Initializing watcher...");
+  //console.log("webrtc: Initializing watcher...");
 
   socket = io("https://test-sream.liveluckystar.com", { transports: ["websocket"] });
 
   socket.on("connect", () => {
-    console.log("webrtc: Connected to socket server.");
+    //console.log("webrtc: Connected to socket server.");
     socket.emit("watcher");
   });
 
   socket.on("broadcaster", () => {
-    console.log("webrtc: Broadcaster available, sending watcher event again...");
+    //console.log("webrtc: Broadcaster available, sending watcher event again...");
     socket.emit("watcher");
   });
 
   socket.on("offer", (id, description) => {
-    console.log("webrtc: Received offer from:", id);
+    //console.log("webrtc: Received offer from:", id);
     uid = id;
     startBroadCast(id, description, videoElement, loaderElement);
   });
@@ -97,12 +97,12 @@ const startBroadCast = (id, description, videoElement, loaderElement = null) => 
     });
 
   peerConnection.addEventListener("track", event => {
-    console.log("🎥 Remote stream received:", event.streams[0]);
+    //console.log("🎥 Remote stream received:", event.streams[0]);
     if (videoElement) {
       videoElement.srcObject = event.streams[0];
       videoElement.muted = true;
       videoElement.play().catch(() => {
-        console.log("Autoplay blocked, waiting for user gesture...");
+        //console.log("Autoplay blocked, waiting for user gesture...");
       });
     }
     if (loaderElement && loaderElement.style) {
@@ -119,7 +119,7 @@ const startBroadCast = (id, description, videoElement, loaderElement = null) => 
   // Optional DataChannel
   const dataChannel = peerConnection.createDataChannel("message");
   peerConnection.addEventListener("datachannel", event => {
-    console.log("📡 DataChannel opened", event.channel);
+    //console.log("📡 DataChannel opened", event.channel);
     dataChannel.send("Hello from watcher!");
   });
 
@@ -127,7 +127,7 @@ const startBroadCast = (id, description, videoElement, loaderElement = null) => 
     if (peerConnection.connectionState === "disconnected" ||
       peerConnection.connectionState === "failed" ||
       peerConnection.connectionState === "closed") {
-      console.log("⚠️ Connection lost, reconnecting...");
+      //console.log("⚠️ Connection lost, reconnecting...");
       if (loaderElement && loaderElement.style) {
         loaderElement.style.display = "block";
       }
@@ -139,7 +139,7 @@ const startBroadCast = (id, description, videoElement, loaderElement = null) => 
 // === Reconnect Logic ===
 const reconnect = (videoElement, loaderElement = null) => {
   setTimeout(() => {
-    console.log("🔄 Attempting to reconnect...");
+    //console.log("🔄 Attempting to reconnect...");
     socket.emit("watcher");
   }, 3000);
 };
@@ -147,7 +147,7 @@ const reconnect = (videoElement, loaderElement = null) => {
 // === Utility: Enable audio after click ===
 export const enableAudio = (videoElement) => {
   if (videoElement) {
-    console.log("🔊 Enabling audio");
+    //console.log("🔊 Enabling audio");
     videoElement.muted = false;
   }
 };

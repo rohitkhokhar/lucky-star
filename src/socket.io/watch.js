@@ -21,7 +21,7 @@ export function setupWatcher(videoElement) {
   });
 
   socket.on("connect", () => {
-    console.log("✅ Socket Connected watch :", socket.id);
+    //console.log("✅ Socket Connected watch :", socket.id);
     socket.emit("watcher");
   });
 
@@ -29,7 +29,7 @@ export function setupWatcher(videoElement) {
     uid = id;
     peerConnection = new RTCPeerConnection(config);
 
-    console.log("📡 Received Offer:", description);
+    //console.log("📡 Received Offer:", description);
 
     peerConnection
       .setRemoteDescription(description)
@@ -38,16 +38,16 @@ export function setupWatcher(videoElement) {
       .then(() => socket.emit("answer", id, peerConnection.localDescription));
 
     peerConnection.ontrack = (event) => {
-      console.log("🎥 Stream received:", event.streams[0]);
+      //console.log("🎥 Stream received:", event.streams[0]);
       if (videoElement) videoElement.srcObject = event.streams[0];
     };
 
     // Optional: Data channel setup
     const dataChannel = peerConnection.createDataChannel("message");
     peerConnection.ondatachannel = (event) => {
-      console.log("💬 DataChannel received:", event.channel);
+      //console.log("💬 DataChannel received:", event.channel);
       event.channel.onmessage = (msgEvent) => {
-        console.log("📨 Message from broadcaster:", msgEvent.data);
+        //console.log("📨 Message from broadcaster:", msgEvent.data);
       };
       dataChannel.send("Hello from watcher 👋");
     };
@@ -73,7 +73,7 @@ export function setupWatcher(videoElement) {
 
   function enableAudio() {
     if (videoElement) {
-      console.log("🔊 Enabling audio");
+      //console.log("🔊 Enabling audio");
       videoElement.muted = false;
     }
   }

@@ -28,7 +28,7 @@ export default function WalletDeposit({ onClose }: WalletDepositProps): JSX.Elem
   const [withdrawErrors, setWithdrawErrors] = useState<{ [key: string]: string }>({});
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [transactions, setTransactions] = useState<any[]>([]);
-  // console.log(transactions, "transactions");
+  // //console.log(transactions, "transactions");
 
   useEffect(() => {
     if (toastMessage !== null) {

@@ -17,12 +17,12 @@ function HorizontalDesign() {
     let socket = getSocket();
 
     if (!socket || socket.disconnected) {
-      console.log("Socket not connected. Connecting...");
+      //console.log("Socket not connected. Connecting...");
       socket = socketConnect();
 
       // Set socket ready after connection
       socket.on("connect", () => {
-        console.log("Socket connected in component.");
+        //console.log("Socket connected in component.");
         setIsSocketReady(true);
       });
 
@@ -47,7 +47,7 @@ function HorizontalDesign() {
 
   useEffect(() => {
     if (isSocketReady && !user) {
-      console.log("No user. Disconnecting socket and logging out.");
+      //console.log("No user. Disconnecting socket and logging out.");
       // dispatch(logoutUser());
       const socket = getSocket();
       socket?.disconnect();

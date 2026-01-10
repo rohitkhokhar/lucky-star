@@ -40,14 +40,14 @@ const App = () => {
   const [isAuth, setIsAuth] = useState(checkAuth());
   const [socketConnected, setSocketConnected] = useState(false); // 🔥 New state
   const authToken = JSON.parse(localStorage.getItem("authToken"));
-  // console.log("Auth Token:", authToken, isAuth, socketConnected);
+  // //console.log("Auth Token:", authToken, isAuth, socketConnected);
 
   useEffect(() => {
     const connectAndRestart = () => {
       const socket = socketConnect();
       socket.off("connect");
       socket.on("connect", () => {
-        console.log("🟢 Socket fully connected, now sending RESTART_GAME");
+        //console.log("🟢 Socket fully connected, now sending RESTART_GAME");
         setSocketConnected(true);
 
         if (authToken) {

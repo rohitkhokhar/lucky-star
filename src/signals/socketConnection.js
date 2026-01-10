@@ -16,7 +16,7 @@ export const socketConnect = () => {
     });
 
     socket.on("connect", () => {
-      console.log("✅ Socket connected sokcet:", socket.id);
+      //console.log("✅ Socket connected sokcet:", socket.id);
     });
 
     socket.on("connect_error", (err) => {
@@ -35,12 +35,12 @@ export const socketConnect = () => {
     });
 
     socket.on("res", (data) => {
-      console.log("📩 Socket response received:", data);
+      //console.log("📩 Socket response received:", data);
 
       switch (data.en) {
         case "LOGIN":
           if (!data.err) {
-            console.log("✅ Login successful:", data.data);
+            //console.log("✅ Login successful:", data.data);
             if (data.data?.AppLunchDetails) {
               localStorage.setItem("user", JSON.stringify(data.data));
               store.dispatch(setUser(data.data));
@@ -53,7 +53,7 @@ export const socketConnect = () => {
 
         case "SEND_OTP":
           if (!data.err) {
-            console.log("✅ OTP sent successfully:", data);
+            //console.log("✅ OTP sent successfully:", data);
           } else {
             console.error("❌ OTP sending failed:", data.msg);
             alert(data.msg);
@@ -64,7 +64,7 @@ export const socketConnect = () => {
           if (data.err_code === "0006") {
             alert(data.msg);
           } else if (!data.err) {
-            console.log("✅ Signup successful! Redirecting to login...");
+            //console.log("✅ Signup successful! Redirecting to login...");
             window.location.href = "/login";
           } else {
             console.error("❌ Signup failed:", data.msg);
@@ -107,7 +107,7 @@ export const sendEvent = (en, data) => {
   if (!socket) socketConnect();
   if (socket && socket.connected) {
     socket.emit("req", { en, data });
-    console.log(`📤 Sent event "${en}" with data:`, data);
+    //console.log(`📤 Sent event "${en}" with data:`, data);
   } else {
     console.error("⚠️ Socket not connected. Unable to send event.");
     alert("Unable to connect to the server. Please try again later.");

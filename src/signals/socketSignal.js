@@ -26,7 +26,7 @@ socket.on("offer", (id, description) => {
       socket.emit("answer", id, peerConnection.localDescription);
     });
   peerConnection.ontrack = event => {
-    console.log('event: ', event);
+    //console.log('event: ', event);
     // video.srcObject = event.streams[0];
   };
   peerConnection.onicecandidate = event => {
@@ -44,7 +44,7 @@ socket.on("candidate", (id, candidate) => {
 });
 
 socket.on("connect", () => {
-  console.log("connect: 11");
+  //console.log("connect: 11");
   socket.emit("watcher");
 });
 
