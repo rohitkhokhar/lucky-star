@@ -5,7 +5,7 @@ import Peer from "peerjs";
 /* =======================
    Utils
 ======================= */
-const log = (...a) => //console.log("[webrtc]", ...a);
+const log = (...a) => console.log("[webrtc]", ...a);
 const warn = (...a) => console.warn("[webrtc]", ...a);
 const err = (...a) => console.error("[webrtc]", ...a);
 
