@@ -403,7 +403,7 @@ function FooterPart() {
 
         case "LIVE_GAME_WINNER":
           setGameState(data.game_state);
-
+          console.log('LIVE_GAME_WINNER',data);
           setToastMessage(() => {
             const winSide = data.win_side.toLowerCase();
             const isFirstBet = data.bet_no === "first_bet";
@@ -482,6 +482,8 @@ function FooterPart() {
           break;
 
         case "LIVE_GAME_ROUND_WIN":
+          
+          console.log('LIVE_GAME_ROUND_WIN',data);
           if (data.user_id === user?._id) {
             setToastMessage(`🎉 You won ₹${data.win_amount}!`);
             setToastType("success");
