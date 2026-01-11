@@ -56,7 +56,8 @@ function Box1({
 
       <div className="w-full h-[25%] flex justify-center items-center ">
         {coins.map((coin, index) => {
-          const isDisabled = !canPlace || coin.value > userBalance - totalBet;
+          // console.log(coin.value > userBalance)
+          const isDisabled = !canPlace || coin.value > userBalance;
           return (
             <div
               key={index}

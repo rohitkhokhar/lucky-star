@@ -33,6 +33,7 @@ function Box2({
 
   useEffect(() => {
     if (data?.total_bet_on_cards) {
+        // console.log(data?.total_bet_on_cards);
       setTotalBetAndarBahar(data?.total_bet_on_cards);
     }
   }, [data]);
@@ -50,6 +51,7 @@ function Box2({
       }
       const { en, data } = response;
       if (en === "LIVE_GAME_PLACE_BET_INFO") {
+        // console.log(data?.total_bet_on_cards);
         setTotalBetAndarBahar(data?.total_bet_on_cards);
       }
     };
@@ -244,7 +246,7 @@ function Box2({
                 <span className="coin-symbol">₹</span>
               </div>
               <p className="coin-value ">
-                {formatNumber(pos.totalValue, total_wallet || userBalance)}
+                {formatNumber(pos.totalValue, total_wallet)}
               </p>
             </div>
           ))}
