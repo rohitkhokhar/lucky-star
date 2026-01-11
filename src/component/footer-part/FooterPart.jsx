@@ -100,7 +100,7 @@ function FooterPart() {
       const { en, data } = response;
 
       if (en === "UPDATED_WALLET") {
-        //console.log("UPDATED_WALLET#####", data.total_wallet);
+        console.log("UPDATED_WALLET#####", data.total_wallet);
         localStorage.setItem("total_wallet", JSON.stringify(data.total_wallet));
         setUserBalance(data.total_wallet);
         if (user) {
@@ -325,7 +325,7 @@ function FooterPart() {
             total_bet_on_cards: data.total_bet_on_cards,
             user_total_bet: andar + bahar,
           }));
-          // console.log('LIVE_GAME_PLACE_BET_INFO',data);
+          console.log('LIVE_GAME_PLACE_BET_INFO',data);
           break;
 
         case "LIVE_GAME_SET_JOKER":

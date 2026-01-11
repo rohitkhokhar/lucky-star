@@ -102,8 +102,19 @@ function Box2({
     }
 
     const currentBalance = total_wallet ?? userBalance ?? 0;
-
     const newBetValue = selectedCoin.value;
+
+    /* ================= 🟢 NEW LOGIC START ================= */
+    const remainingBalance = currentBalance - totalBetValue;
+
+    // Balance bacha hai but selected coin bada hai
+    if (remainingBalance > 0 && newBetValue > remainingBalance) {
+      setErrorMessage("Select different coin");
+      setInsufficientBalance(true);
+      setTimeout(() => setInsufficientBalance(false), 3000);
+      return;
+    }
+    /* ================= 🟢 NEW LOGIC END ================= */
 
     const totalBetLimit =
       (data?.bet_limit_configs?.andar || 0) +
@@ -112,7 +123,7 @@ function Box2({
     const andarLimit = data?.bet_limit_configs?.andar || 0;
     const baharLimit = data?.bet_limit_configs?.bahar || 0;
 
-    // Check balance: currentBalance is user's wallet; totalBetValue is only pending for this round
+    // Existing balance check (UNCHANGED)
     if (totalBetValue + newBetValue > currentBalance) {
       setErrorMessage("Insufficient Balance!");
       setInsufficientBalance(true);
@@ -120,7 +131,7 @@ function Box2({
       return;
     }
 
-    // Check table limit
+    // Table limit
     if (totalBetValue + newBetValue > totalBetLimit) {
       setErrorMessage("Table Limit Exceeded!");
       setInsufficientBalance(true);
@@ -128,7 +139,7 @@ function Box2({
       return;
     }
 
-    // Check individual side limits
+    // Side limits
     if (position === "andar" && andarBet + newBetValue > andarLimit) {
       setErrorMessage("Andar Bet Limit Exceeded!");
       setInsufficientBalance(true);
@@ -144,7 +155,7 @@ function Box2({
     }
 
     setInsufficientBalance(false);
-    placeCoin(position, selectedCoin); // pass coin object to placeCoin
+    placeCoin(position, selectedCoin);
   };
 
   const isBlurred =
@@ -230,6 +241,7 @@ function Box2({
 
           {/* Coins */}
           {coinPositions.map((pos, index) => (
+            
             <div
               key={index}
               className={`coin-container  ${pos.position === "andar"
@@ -246,7 +258,7 @@ function Box2({
                 <span className="coin-symbol">₹</span>
               </div>
               <p className="coin-value ">
-                {formatNumber(pos.totalValue, total_wallet)}
+                {formatNumber(pos.totalValue)}
               </p>
             </div>
           ))}
