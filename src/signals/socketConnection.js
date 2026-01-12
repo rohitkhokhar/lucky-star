@@ -94,6 +94,28 @@ export const socketConnect = () => {
           }
           break;
 
+        case "LOGOUT":
+          console.warn("🔴 Force logout received from server");
+
+          [
+            "user",
+            "authToken",
+            "min_max_config",
+            "total_wallet",
+            "wellcome_note",
+            "room_limit",
+          ].forEach((key) => localStorage.removeItem(key));
+
+          store.dispatch(setUser(null));
+
+          if (socket) {
+            socket.disconnect();
+            socket = null;
+          }
+
+          window.location.href = "/Login";
+          break;
+
         default:
           console.warn("⚠️ Unhandled event:", data.en);
       }

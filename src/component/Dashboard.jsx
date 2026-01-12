@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Link, useNavigate } from "react-router-dom";
+import { sendEvent } from "../signals/socketConnection";
+
 import {
   faPlay,
   faWallet,
@@ -29,7 +31,7 @@ const Dashboard = () => {
     }
   };
 
-  const user = getLocalStorageItem("user");
+  const [user, setUser] = useState(() => getLocalStorageItem("user"));
   const initialWelcomeNote = getLocalStorageItem("wellcome_note", "");
   const initialRoomLimit = Number(getLocalStorageItem("room_limit")) || 0;
 
@@ -41,6 +43,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
+    sendEvent("LOGOUT", {});
     // Clear all relevant localStorage items
     [
       "user",
@@ -89,31 +92,63 @@ const Dashboard = () => {
     if (!socket) return;
 
     const handleSettings = (data) => {
-      // ONLINE ROOM EVENT
+      // 🔴 FORCE LOGOUT EVENT
+      if (data.en === "LOGOUT") {
+        console.log("Socket LOGOUT received");
+
+        // Clear localStorage
+        [
+          "user",
+          "authToken",
+          "min_max_config",
+          "total_wallet",
+          "wellcome_note",
+          "room_limit",
+        ].forEach((key) => localStorage.removeItem(key));
+
+        // Redux logout (optional but best practice)
+        dispatch(logout());
+
+        // Redirect to login
+        window.location.href = "/Login";
+        return;
+      }
+
+      // 🟢 ONLINE ROOM EVENT
       if (data.en === "ONLINE_ROOM" && !data.err) {
         const value = data?.data?.online_room_counter || 0;
         setRoomLimit(value);
         localStorage.setItem("room_limit", value.toString());
       }
 
-      // UPDATED WALLET EVENT
+      // 🟢 UPDATED WALLET EVENT
       if (data.en === "UPDATED_WALLET") {
         const totalWallet = data.data?.total_wallet;
+
         if (totalWallet !== undefined) {
           localStorage.setItem("total_wallet", JSON.stringify(totalWallet));
-          if (user) {
-            const updatedUser = { ...user, chips: totalWallet };
+
+          setUser((prevUser) => {
+            if (!prevUser) return prevUser;
+
+            const updatedUser = {
+              ...prevUser,
+              chips: totalWallet,
+            };
+
             localStorage.setItem("user", JSON.stringify(updatedUser));
-          }
+            return updatedUser;
+          });
         }
       }
     };
 
     socket.on("res", handleSettings);
+
     return () => {
       socket.off("res", handleSettings);
     };
-  }, [user]);
+  }, [dispatch]);
 
   return (
     <div

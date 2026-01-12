@@ -8,6 +8,147 @@ export default function Profile() {
     const [showForm, setShowForm] = useState(false);
     const [showWithdrawModal, setShowWithdrawModal] = useState(false);
 
+    const [showPasswordForm, setShowPasswordForm] = useState(false);
+
+    const [passwordData, setPasswordData] = useState({
+        old_password: "",
+        new_password: "",
+        confirm_password: "",
+    });
+    const [passwordServerMsg, setPasswordServerMsg] = useState<{
+        type: "success" | "error" | "";
+        message: string;
+    }>({
+        type: "",
+        message: "",
+    });
+
+    const [passwordErrors, setPasswordErrors] = useState<{ [key: string]: string }>({});
+
+    const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setPasswordData({ ...passwordData, [name]: value });
+        setPasswordErrors({ ...passwordErrors, [name]: "" });
+    };
+
+    const validatePasswordForm = () => {
+        const errors: { [key: string]: string } = {};
+
+        if (!passwordData.old_password) {
+            errors.old_password = "Old password is required";
+        }
+
+        if (!passwordData.new_password) {
+            errors.new_password = "New password is required";
+        } else if (passwordData.new_password.length < 6) {
+            errors.new_password = "Password must be at least 6 characters";
+        }
+
+        if (!passwordData.confirm_password) {
+            errors.confirm_password = "Confirm password is required";
+        } else if (passwordData.new_password !== passwordData.confirm_password) {
+            errors.confirm_password = "Passwords do not match";
+        }
+
+        setPasswordErrors(errors);
+        return Object.keys(errors).length === 0;
+    };
+
+    const handlePasswordSubmit = () => {
+        console.log("STEP 1️⃣ Submit clicked");
+        console.log("Password Form Data:", passwordData);
+
+        if (!validatePasswordForm()) {
+            console.log("❌ STEP 1 FAILED: Validation error", passwordErrors);
+            return;
+        }
+
+        setPasswordServerMsg({ type: "", message: "" });
+
+        const payload = {
+            mobile_number: userData?.mobile_number,
+            old_password: passwordData.old_password,
+            new_password: passwordData.new_password,
+            confrim_password: passwordData.confirm_password,
+        };
+
+        console.log("STEP 2️⃣ Sending PASSWORD_CHANGE event:", payload);
+
+        sendEvent("PASSWORD_CHANGE", payload);
+    };
+
+
+    useEffect(() => {
+        const socket = getSocket();
+        console.log("STEP 3️⃣ Socket instance:", socket);
+
+        if (!socket) {
+            console.log("❌ STEP 3 FAILED: socket is null");
+            return;
+        }
+
+
+        const handler = (response: any) => {
+            console.log("STEP 4️⃣ RAW SOCKET RESPONSE:", response);
+
+            if (!response?.en) {
+                console.log("❌ STEP 4 FAILED: response.en missing");
+                return;
+            }
+
+            if (response.en !== "PASSWORD_CHANGE") {
+                console.log("ℹ️ Ignored event:", response.en);
+                return;
+            }
+
+            console.log("STEP 5️⃣ PASSWORD_CHANGE response detected");
+
+            if (response.err === false) {
+                console.log("✅ STEP 6 SUCCESS RESPONSE", response);
+
+                setPasswordServerMsg({
+                    type: "success",
+                    message:
+                        response?.data?.msg ||
+                        response?.msg ||
+                        "Password changed successfully",
+                });
+
+                sendEvent("LOGOUT", {});
+                // Clear all relevant localStorage items
+                [
+                    "user",
+                    "authToken",
+                    "min_max_config",
+                    "total_wallet",
+                    "wellcome_note",
+                    "room_limit",
+                ].forEach((key) => localStorage.removeItem(key));
+                window.location.href = "/Login";
+            } else {
+                console.log("❌ STEP 6 ERROR RESPONSE", response);
+
+                setPasswordServerMsg({
+                    type: "error",
+                    message: response?.msg || "Password change failed",
+                });
+            }
+        };
+
+        socket.on("res", handler);
+
+        return () => {
+            socket.off("res", handler);
+        };
+    }, []);
+
+    useEffect(() => {
+        console.log("STEP 7️⃣ passwordServerMsg updated:", passwordServerMsg);
+    }, [passwordServerMsg]);
+
+
+
+
     interface UserData {
         full_name?: string;
         profile_url?: string;
@@ -45,36 +186,36 @@ export default function Profile() {
     };
 
     const validateForm = () => {
-    const newErrors: { [key: string]: string } = {};
+        const newErrors: { [key: string]: string } = {};
 
-    const isUPIFilled = formData.upi_id.trim() && /^\d{10}$/.test(formData.mobile_number);
-    const isBankFilled = formData.name.trim() && formData.accno.trim() && /^[A-Z]{4}0[A-Z0-9]{6}$/.test(formData.ifsc) && formData.bank_name.trim() && formData.branch_name.trim() && /^\d{10}$/.test(formData.mobile_number);
+        const isUPIFilled = formData.upi_id.trim() && /^\d{10}$/.test(formData.mobile_number);
+        const isBankFilled = formData.name.trim() && formData.accno.trim() && /^[A-Z]{4}0[A-Z0-9]{6}$/.test(formData.ifsc) && formData.bank_name.trim() && formData.branch_name.trim() && /^\d{10}$/.test(formData.mobile_number);
 
-    if (!isUPIFilled && !isBankFilled) {
-        newErrors.upi_id = "Either UPI ID & Mobile Number or full bank details must be filled.";
-        newErrors.name = "Either UPI ID & Mobile Number or full bank details must be filled.";
+        if (!isUPIFilled && !isBankFilled) {
+            newErrors.upi_id = "Either UPI ID & Mobile Number or full bank details must be filled.";
+            newErrors.name = "Either UPI ID & Mobile Number or full bank details must be filled.";
+            setErrors(newErrors);
+            return false;
+        }
+
+        // Only validate fields in the selected path
+        if (isUPIFilled) {
+            if (!formData.upi_id) newErrors.upi_id = "UPI ID is required.";
+            if (!/^\d{10}$/.test(formData.mobile_number)) newErrors.mobile_number = "Valid 10-digit mobile number required.";
+        }
+
+        if (isBankFilled) {
+            if (!formData.name) newErrors.name = "Beneficiary name is required.";
+            if (!formData.accno) newErrors.accno = "Account number is required.";
+            if (!formData.ifsc || !/^[A-Z]{4}0[A-Z0-9]{6}$/.test(formData.ifsc)) newErrors.ifsc = "Invalid IFSC code.";
+            if (!formData.bank_name) newErrors.bank_name = "Bank name is required.";
+            if (!formData.branch_name) newErrors.branch_name = "Branch name is required.";
+            if (!/^\d{10}$/.test(formData.mobile_number)) newErrors.mobile_number = "Valid 10-digit mobile number required.";
+        }
+
         setErrors(newErrors);
-        return false;
-    }
-
-    // Only validate fields in the selected path
-    if (isUPIFilled) {
-        if (!formData.upi_id) newErrors.upi_id = "UPI ID is required.";
-        if (!/^\d{10}$/.test(formData.mobile_number)) newErrors.mobile_number = "Valid 10-digit mobile number required.";
-    }
-
-    if (isBankFilled) {
-        if (!formData.name) newErrors.name = "Beneficiary name is required.";
-        if (!formData.accno) newErrors.accno = "Account number is required.";
-        if (!formData.ifsc || !/^[A-Z]{4}0[A-Z0-9]{6}$/.test(formData.ifsc)) newErrors.ifsc = "Invalid IFSC code.";
-        if (!formData.bank_name) newErrors.bank_name = "Bank name is required.";
-        if (!formData.branch_name) newErrors.branch_name = "Branch name is required.";
-        if (!/^\d{10}$/.test(formData.mobile_number)) newErrors.mobile_number = "Valid 10-digit mobile number required.";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-};
+        return Object.keys(newErrors).length === 0;
+    };
 
 
     const handleSave = () => {
@@ -111,9 +252,9 @@ export default function Profile() {
                 }
             });
 
-            return () => {
-                socket.off("res");
-            };
+            // return () => {
+            //     socket.off("res");
+            // };
         }
     }, []);
 
@@ -171,7 +312,7 @@ export default function Profile() {
                         {errors[name] && <p className="text-red-500 text-sm mt-1">{errors[name]}</p>}
                     </>
                 ) : (
-                    <div style={{height: "42px"}} className="p-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-800">{formData[name]}</div>
+                    <div style={{ height: "42px" }} className="p-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-800">{formData[name]}</div>
                 )}
             </div>
         );
@@ -215,6 +356,14 @@ export default function Profile() {
                             {formData.upi_id ? "Edit Bank Details" : "Add Bank Details"}
                         </button>
 
+                        <button
+                            onClick={() => setShowPasswordForm(true)}
+                            className="bg-red-600 text-white px-6 py-3 rounded-xl hover:bg-red-700 transition w-full sm:w-auto"
+                        >
+                            Change Password
+                        </button>
+
+
                         {/* <button
                             onClick={() => setShowWithdrawModal(true)}
                             className="bg-purple-600 text-white px-6 py-3 rounded-xl hover:bg-purple-700 transition w-full sm:w-auto"
@@ -257,6 +406,85 @@ export default function Profile() {
                             )}
                         </div>
                     </>
+                )}
+                {showPasswordForm && (
+                    <div className="mt-10 p-6 bg-gray-50 border rounded-xl">
+                        <h2 className="text-2xl font-bold mb-6 text-gray-800">Change Password</h2>
+
+
+                        {passwordServerMsg.message && (
+                            <div
+                                className={`mb-4 p-3 rounded-lg text-sm font-medium ${passwordServerMsg.type === "success"
+                                    ? "bg-green-100 text-green-700 border border-green-300"
+                                    : "bg-red-100 text-red-700 border border-red-300"
+                                    }`}
+                            >
+                                {passwordServerMsg.message}
+                            </div>
+                        )}
+                        {/* Old Password */}
+                        <div className="mb-4">
+                            <label className="block text-sm font-medium mb-1">Old Password</label>
+                            <input
+                                type="password"
+                                name="old_password"
+                                value={passwordData.old_password}
+                                onChange={handlePasswordChange}
+                                className={`w-full border ${passwordErrors.old_password ? "border-red-500" : "border-gray-300"} px-4 py-2 rounded-lg`}
+                            />
+                            {passwordErrors.old_password && (
+                                <p className="text-red-500 text-sm">{passwordErrors.old_password}</p>
+                            )}
+                        </div>
+
+                        {/* New Password */}
+                        <div className="mb-4">
+                            <label className="block text-sm font-medium mb-1">New Password</label>
+                            <input
+                                type="password"
+                                name="new_password"
+                                value={passwordData.new_password}
+                                onChange={handlePasswordChange}
+                                className={`w-full border ${passwordErrors.new_password ? "border-red-500" : "border-gray-300"} px-4 py-2 rounded-lg`}
+                            />
+                            {passwordErrors.new_password && (
+                                <p className="text-red-500 text-sm">{passwordErrors.new_password}</p>
+                            )}
+                        </div>
+
+                        {/* Confirm Password */}
+                        <div className="mb-6">
+                            <label className="block text-sm font-medium mb-1">Confirm Password</label>
+                            <input
+                                type="password"
+                                name="confirm_password"
+                                value={passwordData.confirm_password}
+                                onChange={handlePasswordChange}
+                                className={`w-full border ${passwordErrors.confirm_password ? "border-red-500" : "border-gray-300"} px-4 py-2 rounded-lg`}
+                            />
+                            {passwordErrors.confirm_password && (
+                                <p className="text-red-500 text-sm">{passwordErrors.confirm_password}</p>
+                            )}
+                        </div>
+                        {/* {console.log("STEP 8️⃣ Rendering password message:", passwordServerMsg)} */}
+
+
+
+                        <div className="flex gap-4">
+                            <button
+                                onClick={handlePasswordSubmit}
+                                className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700"
+                            >
+                                Update Password
+                            </button>
+                            <button
+                                onClick={() => setShowPasswordForm(false)}
+                                className="bg-gray-300 px-6 py-2 rounded-lg hover:bg-gray-400"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
                 )}
             </div>
 
