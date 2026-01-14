@@ -26,6 +26,7 @@ function Box2({
   data,
   total_wallet,
   userBalance,
+  pendingBets
 }) {
   const [totalBetAndarBahar, setTotalBetAndarBahar] = useState(null);
   const [insufficientBalance, setInsufficientBalance] = useState(false);
@@ -71,28 +72,16 @@ function Box2({
           ? "third"
           : null;
 
-  const currentRoundKey = getRoundKeyFromGameState(gameState);
-
-  // Only consider pending (unconfirmed) coins of the current round for new-bet limit checks
-  const pendingForCurrentRound = coinPositions.filter(
-    (p) => p.roundKey === currentRoundKey && !p.confirmed
-  );
-
-  const totalBetValue = pendingForCurrentRound.reduce(
-    (sum, p) => sum + (p.totalValue || 0),
-    0
-  );
-
-  const andarBet =
-    pendingForCurrentRound
-      .filter((p) => p.position === "andar")
-      .reduce((s, p) => s + p.totalValue, 0) || 0;
-
-  const baharBet =
-    pendingForCurrentRound
-      .filter((p) => p.position === "bahar")
-      .reduce((s, p) => s + p.totalValue, 0) || 0;
-
+          const currentRoundKey = getRoundKeyFromGameState(gameState);
+          const currentPending = pendingBets?.[currentRoundKey] || {
+            andar: 0,
+            bahar: 0,
+          };
+          
+          const totalBetValue = currentPending.andar + currentPending.bahar;
+          const andarBet = currentPending.andar;
+          const baharBet = currentPending.bahar;
+          
   const handlePlaceBet = (position) => {
     if (!selectedCoin) {
       setErrorMessage("Please select a coin!");
