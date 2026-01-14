@@ -313,7 +313,7 @@ function FooterPart() {
           if (data.err == true) {
             setErrorMessage(data.msg);
             setToastMessage(true);
-            setTimeout(() => setToastMessage(false), 3000)
+            setTimeout(() => setToastMessage(false), 3000);
             // console.log('LIVE_GAME_PLACE_BET',data);
             return;
           }
@@ -325,7 +325,7 @@ function FooterPart() {
             total_bet_on_cards: data.total_bet_on_cards,
             user_total_bet: andar + bahar,
           }));
-          console.log('LIVE_GAME_PLACE_BET_INFO',data);
+          console.log("LIVE_GAME_PLACE_BET_INFO", data);
           break;
 
         case "LIVE_GAME_SET_JOKER":
@@ -483,13 +483,53 @@ function FooterPart() {
 
         case "LIVE_GAME_ROUND_WIN":
           if (data.user_id === user?._id) {
-            setToastMessage(`🎉 You won ₹${data.win_amount}!`);
+            setToastMessage(() => {
+              const winSide = data.win_side?.toLowerCase();
+              const isFirstBet = data.bet_no === "first_bet";
+              const isSecondBet = data.bet_no === "second_bet";
+
+              const isInitialTwoCardsWin =
+                isSecondBet && data.win_round === "second_bet";
+
+              return (
+                <>
+                  <strong>🎉 You Won!</strong>
+                  <br />
+                  Amount: <strong>₹{data.win_amount}</strong>
+                  <br />
+                  Winning side: <strong>{winSide?.toUpperCase()}</strong>
+                  <br />
+                  {/* FIRST BET */}
+                  {isFirstBet && (
+                    <>
+                      {winSide === "bahar"
+                        ? "First Shoot Bahar - 25%"
+                        : "First Shoot Andar - 100%"}
+                    </>
+                  )}
+                  {/* SECOND BET – INITIAL 2 CARDS */}
+                  {isInitialTwoCardsWin && (
+                    <>
+                      {winSide === "bahar"
+                        ? "Second Shoot Bahar - 25%"
+                        : "Second Shoot Andar - 100%"}
+                    </>
+                  )}
+                  {/* SECOND BET – AFTER INITIAL 2 CARDS */}
+                  {isSecondBet && !isInitialTwoCardsWin && (
+                    <>
+                      {winSide === "bahar"
+                        ? "Second Shoot Bahar Win"
+                        : "Second Shoot Andar Win"}
+                    </>
+                  )}
+                </>
+              );
+            });
+
             setToastType("success");
-          } else {
-            setToastMessage("🎉 Winners have been declared!");
-            setToastType("info");
+            setToastKey((prev) => prev + 1);
           }
-          setToastKey((prev) => prev + 1);
           break;
 
         case "LIVE_GAME_ROUND_LOSE":
