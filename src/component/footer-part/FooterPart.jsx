@@ -584,26 +584,35 @@ function FooterPart() {
 
       // Track in visual state
       setCoinPositions((prev) => {
-        const existing = prev.find((pos) => pos.position === position);
-        if (existing) {
-          return prev.map((pos) =>
-            pos.position === position
-              ? { ...pos, totalValue: pos.totalValue + selectedCoin.value }
-              : pos
-          );
-        } else {
-          return [
-            ...prev,
-            {
-              coin: selectedCoin,
-              position,
-              totalValue: selectedCoin.value,
-              roundKey,
-              confirmed: false,
-            },
-          ];
+        const index = prev.findIndex((pos) => pos.position === position);
+      
+        if (index !== -1) {
+          const updated = [...prev];
+      
+          updated[index] = {
+            ...updated[index],
+            totalValue: updated[index].totalValue + selectedCoin.value,
+      
+            // track round internally
+            roundKey,
+            confirmed: false,
+          };
+      
+          return updated;
         }
+      
+        return [
+          ...prev,
+          {
+            coin: selectedCoin,
+            position,
+            totalValue: selectedCoin.value,
+            roundKey,
+            confirmed: false,
+          },
+        ];
       });
+      
       setPendingBets((prev) => {
         const roundData = prev[roundKey] || { andar: 0, bahar: 0 };
         const currentValue = roundData[position] || 0;
@@ -853,6 +862,7 @@ function FooterPart() {
         <Box2
           placeCoin={placeCoin}
           coinPositions={coinPositions}
+          pendingBets={pendingBets}
           centerCard={centerCard}
           gameState={gameState}
           data={data}
