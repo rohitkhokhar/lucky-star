@@ -296,7 +296,7 @@ export default function WalletDeposit({ onClose }: WalletDepositProps): JSX.Elem
           )}
 
           {/* UPI QR + UTR Entry */}
-          {activeTab === "PaymentQRCode" && (
+          {/* {activeTab === "PaymentQRCode" && (
             <div className="text-center mb-4">
               <p className="font-semibold text-xl text-black">Make payment of ₹{selectedAmount} and enter UTR number below</p>
               <p className="text-gray-400 mb-4">
@@ -320,7 +320,7 @@ export default function WalletDeposit({ onClose }: WalletDepositProps): JSX.Elem
                 Submit UTR Number
               </button>
             </div>
-          )}
+          )} */}
 
           {/* Withdraw Tab */}
           {activeTab === "Withdraw" && (
