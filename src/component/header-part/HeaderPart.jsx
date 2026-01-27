@@ -13,7 +13,7 @@ import { getSocket, sendEvent } from "../../signals/socketConnection";
 import { filter } from "framer-motion/client";
 import cardImages from "../../assets/cards";
 
-function HeaderPart({ muted, setMuted }) {
+function HeaderPart({ muted, setMuted,roomId }) {
   const navigate = useNavigate();
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -96,7 +96,7 @@ function HeaderPart({ muted, setMuted }) {
             >
               ←
             </button>
-            TABLE 1 : MIN BET {min_max_config?.min}
+            {roomId.replace(/(\d+)/, " $1").toUpperCase()} : MIN BET {min_max_config?.min}
           </p>
         </div>
         <div className="flex gap-1 justify-end flex-[1] z-10">

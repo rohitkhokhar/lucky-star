@@ -19,7 +19,7 @@ import {
 import Toast from "./Toast";
 
 let localCoinPositions = [];
-function FooterPart() {
+function FooterPart({roomId}) {
   // const user = useSelector((state) => state.auth.user);
   const user = JSON.parse(localStorage.getItem("user")) ?? null;
   const total_wallet = JSON.parse(localStorage.getItem("total_wallet")) ?? 0;
@@ -121,7 +121,7 @@ function FooterPart() {
     const socket = getSocket();
     if (!socket) return;
 
-    sendEvent("LIVE_GAME_INFO", { en: "LIVE_GAME_INFO", data: {} });
+    sendEvent("LIVE_GAME_INFO", { "roomId" : roomId } );
 
     const handleEventResponse = (response) => {
       if (response.err) {
@@ -133,6 +133,7 @@ function FooterPart() {
 
       switch (en) {
         case "LIVE_GAME_INFO":
+          console.log("LIVE_GAME_INFO data:", data);
           setData(data);
           setGameState(data.game_state);
           setCenterCard(data.center_card);

@@ -1,64 +1,55 @@
 import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import "./index.css";
 import HeaderPart from "./header-part/HeaderPart";
 import FooterPart from "./footer-part/FooterPart";
 import WebRTCViewer from "./WebRTCViewer";
 import { useDispatch } from "react-redux";
 import { socketConnect, getSocket } from "../signals/socketConnection";
-// import { logoutUser } from "../redux/authSlice";
 
 function HorizontalDesign() {
+  const { tableId } = useParams(); // 🔥 table1 / table2
   const [muted, setMuted] = useState(false);
-  const dispatch = useDispatch();
   const [isSocketReady, setIsSocketReady] = useState(false);
   const user = JSON.parse(localStorage.getItem("user")) ?? null;
+  const dispatch = useDispatch();
 
   useEffect(() => {
     let socket = getSocket();
 
     if (!socket || socket.disconnected) {
-      //console.log("Socket not connected. Connecting...");
       socket = socketConnect();
 
-      // Set socket ready after connection
       socket.on("connect", () => {
-        //console.log("Socket connected in component.");
+        console.log("🟢 Socket ready for table:", tableId);
         setIsSocketReady(true);
       });
 
       socket.on("disconnect", () => {
-        console.warn("Socket disconnected in component.");
+        console.warn("🔴 Socket disconnected");
       });
     } else {
-      // Already connected
       setIsSocketReady(true);
-
-      socket.on("disconnect", () => {
-        console.warn("Socket disconnected.");
-      });
     }
 
     return () => {
-      const currentSocket = getSocket();
-      currentSocket?.off("disconnect");
-      currentSocket?.off("connect");
+      const s = getSocket();
+      s?.off("connect");
+      s?.off("disconnect");
     };
-  }, []);
+  }, [tableId]);
 
   useEffect(() => {
     if (isSocketReady && !user) {
-      //console.log("No user. Disconnecting socket and logging out.");
-      // dispatch(logoutUser());
-      const socket = getSocket();
-      socket?.disconnect();
+      getSocket()?.disconnect();
     }
-  }, [isSocketReady, user, dispatch]);
+  }, [isSocketReady, user]);
 
   return (
     <>
-      <HeaderPart muted={muted} setMuted={setMuted} />
-      <FooterPart />
-      <WebRTCViewer muted={muted} setMuted={setMuted} />
+      <HeaderPart muted={muted} setMuted={setMuted} roomId={tableId} />
+      <FooterPart roomId={tableId} />
+      <WebRTCViewer muted={muted} roomId={tableId} />
     </>
   );
 }

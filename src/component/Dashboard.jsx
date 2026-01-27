@@ -17,6 +17,7 @@ import LuckyStarLogo from "../assets/luckystarLogo.png";
 import LuckyStarimage1 from "../assets/LuckyStarimage1.jpeg";
 import LuckyStarimage2 from "../assets/LuckyStarimage2.jpeg";
 import LuckyStarimage3 from "../assets/LuckyStarimage3.jpeg";
+import LuckyStarimage4 from "../assets/LuckyStarimage4.jpeg";
 import { getSocket } from "../signals/socketConnection";
 
 const Dashboard = () => {
@@ -181,9 +182,9 @@ const Dashboard = () => {
         )}
 
         {/* Game Tables Section */}
-        <div className="grid grid-cols-3 gap-4 mt-4 mb-6">
+        <div className="grid grid-cols-4 gap-4 mt-4 mb-6">
           {/* Online Table */}
-          <Link to="/Live" className="flex flex-col items-center group">
+          <Link to="/live/table1" className="flex flex-col items-center group">
             <div className="w-28 h-16 sm:w-28 sm:h-20 bg-white border-4 rounded-lg overflow-hidden transition-transform group-hover:scale-105">
               <img
                 src={LuckyStarimage1}
@@ -198,8 +199,23 @@ const Dashboard = () => {
             <p className="text-xs sm:text-sm">Users: {roomLimit}</p>
           </Link>
 
+          <Link to="/live/table2" className="flex flex-col items-center group">
+            <div className="w-28 h-16 sm:w-28 sm:h-20 bg-white border-4 rounded-lg overflow-hidden transition-transform group-hover:scale-105">
+              <img
+                src={LuckyStarimage2}
+                alt="Online Game Table"
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
+            </div>
+            <p className="mt-2 text-sm sm:text-base text-green-500 font-semibold">
+              🟢 Online
+            </p>
+            <p className="text-xs sm:text-sm">Users: {roomLimit}</p>
+          </Link>
+
           {/* Offline Tables */}
-          {[LuckyStarimage2, LuckyStarimage3].map((image, index) => (
+          {[LuckyStarimage3, LuckyStarimage4].map((image, index) => (
             <div key={index} className="flex flex-col items-center">
               <div className="w-28 h-16 sm:w-28 sm:h-20 bg-white border-4 rounded-lg overflow-hidden">
                 <img

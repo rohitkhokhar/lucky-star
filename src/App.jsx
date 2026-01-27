@@ -35,7 +35,7 @@ const PrivateRoute = ({ children }) => {
 
 const App = () => {
   const [isLandscape, setIsLandscape] = useState(
-    window.matchMedia("(orientation: landscape)").matches
+    window.matchMedia("(orientation: landscape)").matches,
   );
   const [isAuth, setIsAuth] = useState(checkAuth());
   const [socketConnected, setSocketConnected] = useState(false); // 🔥 New state
@@ -58,10 +58,10 @@ const App = () => {
               if (response?.relogin_token) {
                 localStorage.setItem(
                   "authToken",
-                  JSON.stringify(response.relogin_token)
+                  JSON.stringify(response.relogin_token),
                 );
               }
-            }
+            },
           );
         }
       });
@@ -134,14 +134,14 @@ const App = () => {
           }
         />
         <Route
-          path="/Live"
+          path="/live/:tableId"
           element={
             <PrivateRoute>
               {socketConnected ? (
                 isLandscape ? (
-                  <HorizontalDesign key="landscape" />
+                  <HorizontalDesign />
                 ) : (
-                  <RotateScreenWarning key="portrait" />
+                  <RotateScreenWarning />
                 )
               ) : (
                 <div style={{ textAlign: "center", padding: "2rem" }}>
