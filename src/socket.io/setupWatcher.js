@@ -63,9 +63,9 @@ export const setupWatcher = (videoEl, roomId, setIsLoading) => {
         iceServers: [
           {
             urls: [
-              "turn:15.207.116.222:3478?transport=udp",
-              "turn:15.207.116.222:3478?transport=tcp",
-              "turns:15.207.116.222:5349?transport=tcp"
+              "turn:52.66.68.225:3478?transport=udp",
+              "turn:52.66.68.225:3478?transport=tcp",
+              "turns:52.66.68.225:5349?transport=tcp"
             ],
             username: "lltest",
             credential: "lltest123"
