@@ -19,7 +19,7 @@ import {
 import Toast from "./Toast";
 
 let localCoinPositions = [];
-function FooterPart({roomId}) {
+function FooterPart({ roomId }) {
   // const user = useSelector((state) => state.auth.user);
   const user = JSON.parse(localStorage.getItem("user")) ?? null;
   const total_wallet = JSON.parse(localStorage.getItem("total_wallet")) ?? 0;
@@ -121,7 +121,7 @@ function FooterPart({roomId}) {
     const socket = getSocket();
     if (!socket) return;
 
-    sendEvent("LIVE_GAME_INFO", { "roomId" : roomId } );
+    sendEvent("LIVE_GAME_INFO", { roomId: roomId });
 
     const handleEventResponse = (response) => {
       if (response.err) {
@@ -140,12 +140,12 @@ function FooterPart({roomId}) {
           if (data.total_wallet)
             localStorage.setItem(
               "total_wallet",
-              JSON.stringify(data.total_wallet)
+              JSON.stringify(data.total_wallet),
             );
           if (data.min_max_config) {
             localStorage.setItem(
               "min_max_config",
-              JSON.stringify(data.min_max_config)
+              JSON.stringify(data.min_max_config),
             );
           } else {
             localStorage.removeItem("min_max_config");
@@ -162,7 +162,7 @@ function FooterPart({roomId}) {
             .reduce(
               (sum, b) =>
                 sum + (b.card_details.andar || 0) + (b.card_details.bahar || 0),
-              0
+              0,
             );
 
           const secondBetTotal = bets
@@ -170,7 +170,7 @@ function FooterPart({roomId}) {
             .reduce(
               (sum, b) =>
                 sum + (b.card_details.andar || 0) + (b.card_details.bahar || 0),
-              0
+              0,
             );
 
           setBetAmounts({
@@ -343,21 +343,21 @@ function FooterPart({roomId}) {
             data.bet_no === "first_bet"
               ? "first"
               : data.bet_no === "second_bet"
-              ? "second"
-              : "third";
+                ? "second"
+                : "third";
 
           setCoinPositions((prev) =>
             prev.filter(
               (pos) =>
-                pos.confirmed === true || pos.roundKey === currentRoundKey
-            )
+                pos.confirmed === true || pos.roundKey === currentRoundKey,
+            ),
           );
 
           setCoinHistory((prev) =>
             prev.filter(
               (coin) =>
-                coin.confirmed === true || coin.roundKey === currentRoundKey
-            )
+                coin.confirmed === true || coin.roundKey === currentRoundKey,
+            ),
           );
 
           // Reset pending bets only for the current round
@@ -370,7 +370,7 @@ function FooterPart({roomId}) {
           setToastMessage(
             `${data.bet_no
               .replace("_", " ")
-              .replace(/\b\w/g, (char) => char.toUpperCase())} Round Started!`
+              .replace(/\b\w/g, (char) => char.toUpperCase())} Round Started!`,
           );
           setToastType("info");
           setToastKey((prev) => prev + 1);
@@ -388,7 +388,7 @@ function FooterPart({roomId}) {
             setToastMessage(
               `${data.bet_no
                 .replace("_", " ")
-                .replace(/\b\w/g, (char) => char.toUpperCase())} round closed.`
+                .replace(/\b\w/g, (char) => char.toUpperCase())} round closed.`,
             );
             setToastType("error");
           }
@@ -396,7 +396,7 @@ function FooterPart({roomId}) {
           setToastMessage(
             `${data.bet_no
               .replace("_", " ")
-              .replace(/\b\w/g, (char) => char.toUpperCase())} round closed.`
+              .replace(/\b\w/g, (char) => char.toUpperCase())} round closed.`,
           );
           setToastType("error");
           setToastKey((prev) => prev + 1);
@@ -436,13 +436,13 @@ function FooterPart({roomId}) {
                   </>
                 )}
                 {/* SECOND BET – AFTER INITIAL 2 CARDS */}
-                {isSecondBet && !isInitialTwoCardsWin && (
+                {/* {isSecondBet && !isInitialTwoCardsWin && (
                   <>
                     {winSide === "bahar"
                       ? "Second Shoot Bahar Win"
                       : "Second Shoot Andar Win"}
                   </>
-                )}
+                )} */}
               </>
             );
           });
@@ -494,15 +494,13 @@ function FooterPart({roomId}) {
 
               return (
                 <>
-                  <strong>🎉 You Won!</strong>
-                  <br />
-                  Amount: <strong>₹{data.win_amount}</strong>
-                  <br />
-                  Winning side: <strong>{winSide?.toUpperCase()}</strong>
-                  <br />
                   {/* FIRST BET */}
                   {isFirstBet && (
                     <>
+                      <strong>Winner Declared!</strong>
+                      <br />
+                      Winning side: <strong>{winSide?.toUpperCase()}</strong>
+                      <br />
                       {winSide === "bahar"
                         ? "First Shoot Bahar - 25%"
                         : "First Shoot Andar - 100%"}
@@ -511,6 +509,12 @@ function FooterPart({roomId}) {
                   {/* SECOND BET – INITIAL 2 CARDS */}
                   {isInitialTwoCardsWin && (
                     <>
+                      <strong>🎉 You Won!</strong>
+                      <br />
+                      Amount: <strong>₹{data.win_amount}</strong>
+                      <br />
+                      Winning side: <strong>{winSide?.toUpperCase()}</strong>
+                      <br />
                       {winSide === "bahar"
                         ? "Second Shoot Bahar - 25%"
                         : "Second Shoot Andar - 100%"}
@@ -519,9 +523,14 @@ function FooterPart({roomId}) {
                   {/* SECOND BET – AFTER INITIAL 2 CARDS */}
                   {isSecondBet && !isInitialTwoCardsWin && (
                     <>
-                      {winSide === "bahar"
+                      <strong>🎉 You Won!</strong>
+                      <br />
+                      Amount: <strong>₹{data.win_amount}</strong>
+                      <br />
+                      Winning side: <strong>{winSide?.toUpperCase()}</strong>
+                      {/* {winSide === "bahar"
                         ? "Second Shoot Bahar Win"
-                        : "Second Shoot Andar Win"}
+                        : "Second Shoot Andar Win"} */}
                     </>
                   )}
                 </>
@@ -580,28 +589,28 @@ function FooterPart({roomId}) {
         gameState === "start_round_first_bet"
           ? "first"
           : gameState === "start_round_second_bet"
-          ? "second"
-          : "third";
+            ? "second"
+            : "third";
 
       // Track in visual state
       setCoinPositions((prev) => {
         const index = prev.findIndex((pos) => pos.position === position);
-      
+
         if (index !== -1) {
           const updated = [...prev];
-      
+
           updated[index] = {
             ...updated[index],
             totalValue: updated[index].totalValue + selectedCoin.value,
-      
+
             // track round internally
             roundKey,
             confirmed: false,
           };
-      
+
           return updated;
         }
-      
+
         return [
           ...prev,
           {
@@ -613,7 +622,7 @@ function FooterPart({roomId}) {
           },
         ];
       });
-      
+
       setPendingBets((prev) => {
         const roundData = prev[roundKey] || { andar: 0, bahar: 0 };
         const currentValue = roundData[position] || 0;
@@ -675,9 +684,9 @@ function FooterPart({roomId}) {
           .map((pos) =>
             pos.position === lastCoin.position
               ? { ...pos, totalValue: pos.totalValue - lastCoin.value }
-              : pos
+              : pos,
           )
-          .filter((pos) => pos.totalValue > 0)
+          .filter((pos) => pos.totalValue > 0),
       );
 
       setCoinHistory((prev) => prev.slice(0, -1));
@@ -711,8 +720,8 @@ function FooterPart({roomId}) {
       gameState === "start_round_first_bet"
         ? "first"
         : gameState === "start_round_second_bet"
-        ? "second"
-        : "third";
+          ? "second"
+          : "third";
 
     // ✅ Pull directly from pendingBets for current round
     const currentPending = pendingBets[roundKey] || { andar: 0, bahar: 0 };
@@ -766,7 +775,7 @@ function FooterPart({roomId}) {
         setToastMessage(
           `Bet Placed: ${andarBet > 0 ? `Andar ₹${andarBet} ` : ""}${
             baharBet > 0 ? `Bahar ₹${baharBet}` : ""
-          }`.trim()
+          }`.trim(),
         );
         setToastType("success");
         //console.log("Bet successfully placed:", totalBet);
@@ -796,14 +805,14 @@ function FooterPart({roomId}) {
         // mark coinHistory entries as confirmed (you already do this)
         setCoinHistory((prev) =>
           prev.map((coin) =>
-            coin.roundKey === roundKey ? { ...coin, confirmed: true } : coin
-          )
+            coin.roundKey === roundKey ? { ...coin, confirmed: true } : coin,
+          ),
         );
 
         setCoinPositions((prev) =>
           prev.map((pos) =>
-            pos.roundKey === roundKey ? { ...pos, confirmed: true } : pos
-          )
+            pos.roundKey === roundKey ? { ...pos, confirmed: true } : pos,
+          ),
         );
       }
 
