@@ -497,7 +497,9 @@ function FooterPart({ roomId }) {
                   {/* FIRST BET */}
                   {isFirstBet && (
                     <>
-                      <strong>Winner Declared!</strong>
+                      <strong>🎉 You Won!</strong>
+                      <br />
+                      Amount: <strong>₹{data.win_amount}</strong>
                       <br />
                       Winning side: <strong>{winSide?.toUpperCase()}</strong>
                       <br />

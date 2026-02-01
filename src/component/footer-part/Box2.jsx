@@ -173,7 +173,7 @@ function Box2({
             <img src={subtrackTop} alt="" className="w-full h-full absolute" />
             <div className="z-10 p-2 sm:p-1 text-white font-bold sm:text-[14px] lg:text-[24px]">
               <span>ANDAR</span>
-              {data?.total_bet_on_cards?.andar && (
+              {/* {data?.total_bet_on_cards?.andar && (
                 <div
                   className="z-10 pt-2 transform -translate-y-1/2 flex flex-col"
                   style={{ paddingTop: "30px" }}
@@ -182,7 +182,7 @@ function Box2({
                     Live Bets-{formatNumber(totalBetAndarBahar?.andar || 0)}
                   </span>
                 </div>
-              )}
+              )} */}
             </div>
           </div>
 
@@ -215,7 +215,7 @@ function Box2({
             />
             <div className="z-10 p-2 sm:p-1 text-white font-bold sm:text-[14px] lg:text-[24px]">
               <span>BAHAR</span>
-              {data?.total_bet_on_cards?.bahar && (
+              {/* {data?.total_bet_on_cards?.bahar && (
                 <div
                   className="z-10 pt-2 transform -translate-y-1/2 flex flex-col"
                   style={{ paddingTop: "30px" }}
@@ -224,7 +224,7 @@ function Box2({
                     Live Bets-{formatNumber(totalBetAndarBahar?.bahar || 0)}
                   </span>
                 </div>
-              )}
+              )} */}
             </div>
           </div>
 
