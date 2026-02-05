@@ -33,36 +33,35 @@ function HeaderPart({ muted, setMuted, roomId }) {
     if (!socket) return;
 
     const handleAnnouncement = (response) => {
-  if (response?.err) return;
+      if (response?.err) return;
+      const { en, data } = response;
+      const text = data?.announcement_text?.trim();
 
-  const { en, data } = response;
-  const text = data?.announcement_text?.trim();
+      console.log("Received announcement:", text);  
+      // ❌ Empty or missing announcement → HIDE
+      if (!text) {
+        setAnnouncement("");
+        setShowAnnouncement(false);
+        setHighlightAnnouncement(false);
+        return;
+      }
 
-  // ❌ Empty or missing announcement → HIDE
-  if (!text) {
-    setAnnouncement("");
-    setShowAnnouncement(false);
-    setHighlightAnnouncement(false);
-    return;
-  }
+      // ✅ LIVE GAME INFO
+      if (en === "LIVE_GAME_INFO") {
+        setAnnouncement(text);
+        setShowAnnouncement(true);
+      }
 
-  // ✅ LIVE GAME INFO
-  if (en === "LIVE_GAME_INFO") {
-    setAnnouncement(text);
-    setShowAnnouncement(true);
-  }
-
-  // ✅ GAME ANNOUNCEMENT (with highlight)
-  if (en === "GAME_ANNOUNCEMENT") {
-    setAnnouncement(text);
-    setShowAnnouncement(true);
-
-    setHighlightAnnouncement(true);
-    setTimeout(() => {
-      setHighlightAnnouncement(false);
-    }, 5000);
-  }
-};
+      // ✅ GAME ANNOUNCEMENT (with highlight)
+      if (en === "GAME_ANNOUNCEMENT") {
+        setAnnouncement(text);
+        setShowAnnouncement(true);
+        setHighlightAnnouncement(true);
+        setTimeout(() => {
+          setHighlightAnnouncement(false);
+        }, 5000);
+      }
+    };
 
     socket.on("res", handleAnnouncement);
 
@@ -152,8 +151,8 @@ function HeaderPart({ muted, setMuted, roomId }) {
           {showAnnouncement && (
             <h5
               className={`text-xl sm:text-sm font-semibold px-4 py-2 transition-all duration-300
-          ${highlightAnnouncement ? "announcement-highlight" : "text-white"}
-        `}
+                        ${highlightAnnouncement ? "announcement-highlight" : "text-white"}
+                      `}
             >
               📢 Announcement : {announcement}
             </h5>

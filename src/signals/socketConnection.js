@@ -72,10 +72,10 @@ export const socketConnect = () => {
           }
           break;
 
-        case "GAME_ANNOUNCEMENT":
+        case "SETTING":
           if (!data.err) {
-            if (data.data?.announcement_text) {
-              localStorage.setItem("wellcome_note", JSON.stringify(data?.data?.announcement_text));
+            if (data.data?.wellcome_note) {
+              localStorage.setItem("wellcome_note", JSON.stringify(data?.data?.wellcome_note));
             }
           } else {
             console.error("❌ announcement failed:", data.msg);

@@ -197,6 +197,8 @@ const Dashboard = () => {
               🟢 Online
             </p>
             <p className="text-xs sm:text-sm">Users: {roomLimit}</p>
+            <p className="text-xs sm:text-sm">Opening Time: {'11:00 Am'}</p>
+            <p className="text-xs sm:text-sm">Closing Time: {'10:00 Pm'}</p>
           </Link>
 
           <Link to="/live/table2" className="flex flex-col items-center group">
@@ -212,6 +214,8 @@ const Dashboard = () => {
               🟢 Online
             </p>
             <p className="text-xs sm:text-sm">Users: {roomLimit}</p>
+            <p className="text-xs sm:text-sm">Opening Time: {'11:00 Am'}</p>
+            <p className="text-xs sm:text-sm">Closing Time: {'10:00 Pm'}</p>
           </Link>
 
           {/* Offline Tables */}
