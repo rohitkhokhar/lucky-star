@@ -34,8 +34,8 @@ function FooterPart({ roomId }) {
     user_total_bet: 0,
   });
   const [toastKey, setToastKey] = useState(0);
-  const [announcement, setAnnouncement] = useState("");
-  const [showAnnouncement, setShowAnnouncement] = useState(false);
+  // const [announcement, setAnnouncement] = useState("");
+  // const [showAnnouncement, setShowAnnouncement] = useState(false);
   const [hasPlacedBet, setHasPlacedBet] = useState(false);
   const [btnDisabled, setBtnDisabled] = useState(false);
   const [betAmounts, setBetAmounts] = useState({
@@ -151,10 +151,10 @@ function FooterPart({ roomId }) {
             localStorage.removeItem("min_max_config");
           }
 
-          if (data.announcement_text) {
-            setAnnouncement(data.announcement_text);
-            setShowAnnouncement(true);
-          }
+          // if (data.announcement_text) {
+          //   setAnnouncement(data.announcement_text);
+          //   setShowAnnouncement(true);
+          // }
 
           const bets = data.bet_lists || [];
           const firstBetTotal = bets
@@ -832,26 +832,26 @@ function FooterPart({ roomId }) {
 
   const totalBet = coinPositions.reduce((sum, pos) => sum + pos.totalValue, 0);
 
-  const AnnouncementPopup = () => (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-5 text-center animate-fade-in">
-        <h2 className="text-xl font-semibold text-gray-800 mb-3">
-          📢 Announcement
-        </h2>
-        <p className="text-sm text-gray-700 mb-4">{announcement}</p>
-        <button
-          className="bg-blue-600 text-white font-medium py-2 px-6 rounded-full hover:bg-blue-700 transition-all"
-          onClick={() => setShowAnnouncement(false)}
-        >
-          Close
-        </button>
-      </div>
-    </div>
-  );
+  // const AnnouncementPopup = () => (
+  //   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 p-4">
+  //     <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-5 text-center animate-fade-in">
+  //       <h2 className="text-xl font-semibold text-gray-800 mb-3">
+  //         📢 Announcement
+  //       </h2>
+  //       <p className="text-sm text-gray-700 mb-4">{announcement}</p>
+  //       <button
+  //         className="bg-blue-600 text-white font-medium py-2 px-6 rounded-full hover:bg-blue-700 transition-all"
+  //         onClick={() => setShowAnnouncement(false)}
+  //       >
+  //         Close
+  //       </button>
+  //     </div>
+  //   </div>
+  // );
 
   return (
     <>
-      {showAnnouncement && <AnnouncementPopup />}
+      {/* {showAnnouncement && <AnnouncementPopup />} */}
       <div
         className="absolute bottom-0 w-full flex footerContainer gap-2 h-[50%] lg:h-[40%] z-11"
         style={{ userSelect: "none" }}

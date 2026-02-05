@@ -1,6 +1,41 @@
+// setupWatcher.js
 import { io } from "socket.io-client";
 import Peer from "peerjs";
 
+/* =======================
+   Utils
+======================= */
+const log = (...a) => console.log("[webrtc]", ...a);
+const warn = (...a) => console.warn("[webrtc]", ...a);
+const err = (...a) => console.error("[webrtc]", ...a);
+
+/* =======================
+   Config
+======================= */
+const CONFIG = {
+  SIGNALING_URL: "https://llive-stream-socket.liveluckystar.com",
+  PEER: {
+    host: "llive-stream.liveluckystar.com",
+    path: "/peerjs",
+    secure: true,
+    query: { token: "VIEWER_SECRET_456" },
+    config: {
+      iceServers: [{
+        urls: [
+          "turn:52.66.68.225:3478?transport=udp",
+          "turn:52.66.68.225:3478?transport=tcp",
+          "turns:52.66.68.225:5349?transport=tcp"
+        ],
+        username: "lltest",
+        credential: "lltest123"
+      }]
+    }
+  }
+};
+
+/* =======================
+   Globals
+======================= */
 let socket = null;
 let peer = null;
 let call = null;
@@ -8,32 +43,19 @@ let broadcasterId = null;
 let peerReady = false;
 let is_call = false;
 
-function log(...args) { console.log("[webrtc]", ...args); }
-function warn(...args) { console.warn("[webrtc]", ...args); }
-function err(...args) { console.error("[webrtc]", ...args); }
+/* =======================
+   Dummy Stream
+======================= */
+const createDummyStream = (videoEl) => {
+  const width = videoEl?.clientWidth || 640;
+  const height = videoEl?.clientHeight || 480;
 
-// Cleanup function
-const cleanup = () => {
-  if (call) call.close();
-  if (peer && !peer.destroyed) peer.destroy();
-  if (socket) socket.disconnect();
-
-  call = null;
-  peer = null;
-  socket = null;
-  broadcasterId = null;
-  peerReady = false;
-  is_call = false;
-  log("Cleanup done");
-};
-
-// Dummy stream for PeerJS call (needed to initiate WebRTC)
-const dummyStream = () => {
   const canvas = document.createElement("canvas");
-  canvas.width = 640;
-  canvas.height = 480;
+  canvas.width = width;
+  canvas.height = height;
   const ctx = canvas.getContext("2d");
-  ctx.fillRect(0, 0, 640, 480);
+  ctx.fillStyle = "#000";
+  ctx.fillRect(0, 0, width, height);
 
   const videoTrack = canvas.captureStream(1).getVideoTracks()[0];
 
@@ -42,154 +64,132 @@ const dummyStream = () => {
   const dst = osc.connect(audioCtx.createMediaStreamDestination());
   osc.start();
 
-  return new MediaStream([videoTrack, dst.stream.getAudioTracks()[0]]);
+  return new MediaStream([
+    videoTrack,
+    dst.stream.getAudioTracks()[0]
+  ]);
 };
 
-// Main setup function
-export const setupWatcher = (videoEl, roomId, setIsLoading) => {
-  log('Setting up watcher for room:', roomId);
-  cleanup();
+/* =======================
+   Cleanup
+======================= */
+const cleanup = () => {
+  log("cleanup");
+
+  if (call) {
+    call.close();
+    call = null;
+  }
+
+  if (peer && !peer.destroyed) {
+    peer.destroy();
+    peer = null;
+  }
+
+  if (socket) {
+    socket.disconnect();
+    socket = null;
+  }
+
+  broadcasterId = null;
+  peerReady = false;
+  is_call = false;
+};
+
+/* =======================
+   View Stream
+======================= */
+const startView = (videoEl, setIsLoading) => {
+  if (!broadcasterId || !peerReady || call) return;
+
+  log("Calling broadcaster:", broadcasterId);
   setIsLoading(true);
 
-  const CONFIG = {
-    SIGNALING_URL: "https://llive-stream-socket.liveluckystar.com",
-    PEER_CONFIG: {
-      host: "llive-stream.liveluckystar.com",
-      port: 443,
-      path: "/peerjs",
-      secure: true,
-      query: { token: "VIEWER_SECRET_456" },
-      config: {
-        iceServers: [
-          {
-            urls: [
-              "turn:52.66.68.225:3478?transport=udp",
-              "turn:52.66.68.225:3478?transport=tcp",
-              "turns:52.66.68.225:5349?transport=tcp"
-            ],
-            username: "lltest",
-            credential: "lltest123"
-          }
-        ]
-      }
-    }
-  };
+  call = peer.call(broadcasterId, createDummyStream(videoEl));
 
-  // Initialize PeerJS
-  peer = new Peer(undefined, CONFIG.PEER_CONFIG);
-
-  peer.on("open", () => {
-    peerReady = true;
-    log("Peer ready:", peer.id);
-    // If broadcast already started, start viewing
-    if (broadcasterId && !call) {
-      view();
-    }
+  call.on("stream", (stream) => {
+    log("Remote stream received");
+    videoEl.srcObject = stream;
+    videoEl.muted = true;
+    videoEl.play().catch(() => {});
+    
+    socket.emit("viewer-join");
+    is_call = true;
+    setIsLoading(false);
   });
 
-  peer.on("error", (e) => err("Peer error:", e));
-  peer.on("disconnected", () => warn("Peer disconnected"));
-  peer.on("close", () => warn("Peer closed"));
+  call.on("close", () => {
+    warn("Call closed");
+    socket.emit("viewer-leave");
+    call = null;
+    autoReconnect(videoEl, setIsLoading);
+  });
 
-  // Initialize Socket.IO
+  call.on("error", (e) => {
+    err("Call error", e);
+    socket.emit("viewer-leave");
+    call = null;
+    autoReconnect(videoEl, setIsLoading);
+  });
+};
+
+/* =======================
+   Auto Reconnect (OLD LOGIC)
+======================= */
+const autoReconnect = (videoEl, setIsLoading) => {
+  log("autoReconnect check:", { is_call, call, broadcasterId });
+
+  if (is_call && !call && broadcasterId) {
+    setIsLoading(true);
+    setTimeout(() => startView(videoEl, setIsLoading), 2000);
+  }
+};
+
+/* =======================
+   Init Viewer
+======================= */
+export const setupWatcher = (videoEl, setIsLoading = () => {}) => {
+  if (!videoEl) return;
+  cleanup();
+
+  /* ---- Peer ---- */
+  peer = new Peer(undefined, CONFIG.PEER);
+
+  peer.on("open", (id) => {
+    log("Viewer PeerID:", id);
+    peerReady = true;
+    if (broadcasterId) startView(videoEl, setIsLoading);
+  });
+
+  /* ---- Socket ---- */
   socket = io(CONFIG.SIGNALING_URL, {
     auth: { token: "VIEWER_SECRET_456" },
-    transports: ["websocket"],
+    transports: ["websocket", "polling"],
     reconnection: true
   });
 
   socket.on("connect", () => {
     log("Socket connected");
-    socket.emit("viwer_connected", { roomId });
+    socket.emit("viwer_connected", {});
   });
 
-  socket.on("disconnect", () => {
-    log("Socket disconnected ->", roomId);
+  socket.on("broadcast-started", (id) => {
+    log("Broadcast started:", id);
+    broadcasterId = id;
+    if (peerReady) startView(videoEl, setIsLoading);
   });
 
-  // Broadcast started
-  socket.on("broadcast-started", (peerId) => {
-    log("broadcast-started", peerId);
-    broadcasterId = peerId;
-    autoReconnect();
-  });
-
-  // Broadcast stopped
   socket.on("broadcast-stopped", () => {
-    log("broadcast-stopped", new Date());
+    warn("Broadcast stopped");
     broadcasterId = null;
-    if (call) {
-      call.close();
-      call = null;
-    }
+    if (call) call.close();
+    call = null;
     setIsLoading(true);
   });
 
-  // Viewer count
-  socket.on("viewer-count", (n) => {
-    log("Viewer count:", n);
+  socket.on("disconnect", () => {
+    warn("Socket disconnected");
   });
 
-  // Function to start viewing
-  const view = () => {
-    if (!broadcasterId || !peerReady) {
-      warn("Broadcast not started or peer not ready");
-      return;
-    }
-
-    log("Connecting to broadcaster:", broadcasterId);
-
-    call = peer.call(broadcasterId, dummyStream());
-
-    call.on("stream", (stream) => {
-      videoEl.srcObject = stream;
-      const playPromise = videoEl.play();
-
-      if (playPromise !== undefined) {
-        playPromise
-          .then(() => {
-            log("[webrtc] Video playback started");
-            setIsLoading(false);
-            is_call = true;
-          })
-          .catch((err) => {
-            warn("[webrtc] Autoplay prevented, muting video to play", err);
-            videoEl.muted = true; // mute to allow autoplay
-            videoEl.play().catch(() => { });
-            setIsLoading(false);
-            is_call = true;
-          });
-      } else {
-        setIsLoading(false);
-        is_call = true;
-      }
-
-      socket.emit("viewer-join");
-    });
-
-    call.on("close", () => {
-      log("Call closed");
-      socket.emit("viewer-leave");
-      call = null;
-      autoReconnect();
-    });
-
-    call.on("error", (e) => {
-      err("Call error:", e);
-      call = null;
-      autoReconnect();
-    });
-  };
-
-  // Auto-reconnect logic
-  const autoReconnect = () => {
-    log("autoReconnect ...!", call, broadcasterId, (!call && broadcasterId))
-    if (is_call && !call && broadcasterId) {
-      log("Auto-reconnecting...");
-      setTimeout(view, 2000);
-    }
-  };
-
-  // Cleanup before unload
   window.addEventListener("beforeunload", cleanup);
 };

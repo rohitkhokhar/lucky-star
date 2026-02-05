@@ -13,16 +13,63 @@ import { getSocket, sendEvent } from "../../signals/socketConnection";
 import { filter } from "framer-motion/client";
 import cardImages from "../../assets/cards";
 
-function HeaderPart({ muted, setMuted,roomId }) {
+function HeaderPart({ muted, setMuted, roomId }) {
   const navigate = useNavigate();
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [gameList, setGameList] = useState([]);
+  const [announcement, setAnnouncement] = useState("");
+  const [showAnnouncement, setShowAnnouncement] = useState(false);
+  const [highlightAnnouncement, setHighlightAnnouncement] = useState(false);
+
   const min_max_config = JSON.parse(localStorage.getItem("min_max_config"));
 
   const toggleMute = () => {
     setMuted((prev) => !prev);
   };
+
+  useEffect(() => {
+    const socket = getSocket();
+    if (!socket) return;
+
+    const handleAnnouncement = (response) => {
+  if (response?.err) return;
+
+  const { en, data } = response;
+  const text = data?.announcement_text?.trim();
+
+  // ❌ Empty or missing announcement → HIDE
+  if (!text) {
+    setAnnouncement("");
+    setShowAnnouncement(false);
+    setHighlightAnnouncement(false);
+    return;
+  }
+
+  // ✅ LIVE GAME INFO
+  if (en === "LIVE_GAME_INFO") {
+    setAnnouncement(text);
+    setShowAnnouncement(true);
+  }
+
+  // ✅ GAME ANNOUNCEMENT (with highlight)
+  if (en === "GAME_ANNOUNCEMENT") {
+    setAnnouncement(text);
+    setShowAnnouncement(true);
+
+    setHighlightAnnouncement(true);
+    setTimeout(() => {
+      setHighlightAnnouncement(false);
+    }, 5000);
+  }
+};
+
+    socket.on("res", handleAnnouncement);
+
+    return () => {
+      socket.off("res", handleAnnouncement);
+    };
+  }, []);
 
   // Function to toggle fullscreen mode
   const toggleFullscreen = () => {
@@ -87,37 +134,54 @@ function HeaderPart({ muted, setMuted,roomId }) {
 
   return (
     <>
-      <div className="w-full flex px-4 py-2 items-center z-10">
-        <div className="z-10">
-          <p className="headerText">
-            <button
-              onClick={handleBack}
-              className="text-gray-700 px-4 py-2 text-white"
-            >
-              ←
-            </button>
-            {roomId.replace(/(\d+)/, " $1").toUpperCase()} : MIN BET {min_max_config?.min}
+      <div className="w-full flex items-center px-4 py-2 z-10">
+        {/* LEFT */}
+        <div className="flex items-center z-10 min-w-[250px]">
+          <button onClick={handleBack} className="text-white px-4 py-2">
+            ←
+          </button>
+
+          <p className="headerText whitespace-nowrap">
+            {roomId.replace(/(\d+)/, " $1").toUpperCase()} : MIN BET{" "}
+            {min_max_config?.min}
           </p>
         </div>
-        <div className="flex gap-1 justify-end flex-[1] z-10">
+
+        {/* CENTER */}
+        <div className="flex-1 flex justify-center z-10">
+          {showAnnouncement && (
+            <h5
+              className={`text-xl sm:text-sm font-semibold px-4 py-2 transition-all duration-300
+          ${highlightAnnouncement ? "announcement-highlight" : "text-white"}
+        `}
+            >
+              📢 Announcement : {announcement}
+            </h5>
+          )}
+        </div>
+
+        {/* RIGHT */}
+        <div className="flex items-center gap-1 z-10 min-w-[160px] justify-end">
           <div
             onClick={handleRefreshClick}
-            className="w-[40px] h-[40px] sm:w-[30px] sm:h-[30px] rounded-4xl bg-black flex items-center justify-center cursor-pointer"
+            className="w-[40px] h-[40px] rounded-full bg-black flex items-center justify-center cursor-pointer"
           >
             <img src={RefreshIcon} alt="refreshIcon" />
           </div>
+
           <div
-            className="w-[40px] h-[40px] sm:w-[30px] sm:h-[30px] rounded-4xl bg-black flex items-center justify-center cursor-pointer"
+            className="w-[40px] h-[40px] rounded-full bg-black flex items-center justify-center cursor-pointer"
             onClick={toggleMute}
           >
             <img
-              src={muted ? UnmuteIcon : muteIcon} // Replace with actual MuteIcon
+              src={muted ? UnmuteIcon : muteIcon}
               alt="muteToggle"
               className="w-[25px] h-[25px]"
             />
           </div>
+
           <div
-            className="w-[40px] h-[40px] sm:w-[30px] sm:h-[30px] rounded-4xl bg-black flex items-center justify-center cursor-pointer"
+            className="w-[40px] h-[40px] rounded-full bg-black flex items-center justify-center cursor-pointer"
             onClick={toggleFullscreen}
           >
             <img
@@ -171,7 +235,7 @@ function HeaderPart({ muted, setMuted,roomId }) {
                     <tr key={index} className="hover:bg-gray-50 border-b">
                       <td className="px-4 py-2">{item.ticket_id}</td>
                       {/* <td className="px-3 py-2">{item.total_bet_amount}</td>
-                    <td className="px-3 py-2">{item.total_win_amount}</td> */}
+                      <td className="px-3 py-2">{item.total_win_amount}</td> */}
                       <td className="px-3 py-2">
                         {item.center_card && (
                           <>
@@ -217,7 +281,9 @@ function HeaderPart({ muted, setMuted,roomId }) {
                       >
                         {item.total_bet_amount || 0}
                       </td>
-                      <td className="px-4 py-2 text-center">{item.total_win_amount}</td>
+                      <td className="px-4 py-2 text-center">
+                        {item.total_win_amount}
+                      </td>
                     </tr>
                   ))}
                   {gameList.length === 0 && (

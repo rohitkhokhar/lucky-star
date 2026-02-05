@@ -8,3 +8,23 @@
     background: linear-gradient(to bottom, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0));
     pointer-events: none;
 }
+
+@keyframes textGlow {
+  0% {
+    text-shadow: 0 0 5px #ffd700;
+    color: #fff176;
+  }
+  50% {
+    text-shadow: 0 0 15px #ffd700, 0 0 25px #ffea00;
+    color: #ffeb3b;
+  }
+  100% {
+    text-shadow: 0 0 5px #ffd700;
+    color: #fff176;
+  }
+}
+
+.announcement-highlight {
+  animation: textGlow 1.2s ease-in-out infinite;
+  font-weight: 700;
+}
