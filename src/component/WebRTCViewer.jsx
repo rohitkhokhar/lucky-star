@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { setupWatcher } from "../socket.io/setupWatcher";
+import { setupWatcher, stopWatcher } from "../socket.io/setupWatcher";
 
 const WebRTCViewer = ({ muted }) => {
   const videoRef = useRef(null);
@@ -13,22 +13,13 @@ const WebRTCViewer = ({ muted }) => {
 
   useEffect(() => {
     if (videoRef.current) {
-      // Pass video element to setupWatcher
       setupWatcher(videoRef.current, setIsLoading);
     }
-  }, []);
 
-
-  // Optional: Update video/canvas size on window resize
-  useEffect(() => {
-    const handleResize = () => {
-      if (videoRef.current) {
-        // Force re-setup watcher to update canvas size
-        setupWatcher(videoRef.current, setIsLoading);
-      }
+    return () => {
+      console.log("🛑 WebRTCViewer unmounted");
+      stopWatcher();
     };
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   return (
@@ -38,16 +29,15 @@ const WebRTCViewer = ({ muted }) => {
           <p className="text-white text-lg">Table is Currently Offline!</p>
         </div>
       )}
-      <div className="relative">
-        <video
-          ref={videoRef}
-          autoPlay
-          playsInline
-          muted={muted}
-          className="w-full object-contain"
-          style={{ pointerEvents: "none" }}
-        />
-      </div>
+
+      <video
+        ref={videoRef}
+        autoPlay
+        playsInline
+        muted={muted}
+        className="w-full object-contain"
+        style={{ pointerEvents: "none" }}
+      />
     </div>
   );
 };

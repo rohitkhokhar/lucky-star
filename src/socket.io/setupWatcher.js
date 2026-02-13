@@ -41,7 +41,6 @@ let peer = null;
 let call = null;
 let broadcasterId = null;
 let peerReady = false;
-let is_call = false;
 
 /* =======================
    Dummy Stream
@@ -71,10 +70,10 @@ const createDummyStream = (videoEl) => {
 };
 
 /* =======================
-   Cleanup
+   STOP WATCHER (🔥 IMPORTANT)
 ======================= */
-const cleanup = () => {
-  log("cleanup");
+export const stopWatcher = () => {
+  log("🛑 Stopping WebRTC watcher");
 
   if (call) {
     call.close();
@@ -87,17 +86,17 @@ const cleanup = () => {
   }
 
   if (socket) {
+    socket.emit("viewer-leave");
     socket.disconnect();
     socket = null;
   }
 
   broadcasterId = null;
   peerReady = false;
-  is_call = false;
 };
 
 /* =======================
-   View Stream
+   Start View
 ======================= */
 const startView = (videoEl, setIsLoading) => {
   if (!broadcasterId || !peerReady || call) return;
@@ -112,45 +111,30 @@ const startView = (videoEl, setIsLoading) => {
     videoEl.srcObject = stream;
     videoEl.muted = true;
     videoEl.play().catch(() => {});
-    
     socket.emit("viewer-join");
-    is_call = true;
     setIsLoading(false);
   });
 
   call.on("close", () => {
     warn("Call closed");
-    socket.emit("viewer-leave");
-    call = null;
-    autoReconnect(videoEl, setIsLoading);
+    stopWatcher();
+    setIsLoading(true);
   });
 
   call.on("error", (e) => {
     err("Call error", e);
-    socket.emit("viewer-leave");
-    call = null;
-    autoReconnect(videoEl, setIsLoading);
+    stopWatcher();
+    setIsLoading(true);
   });
 };
 
 /* =======================
-   Auto Reconnect (OLD LOGIC)
-======================= */
-const autoReconnect = (videoEl, setIsLoading) => {
-  log("autoReconnect check:", { is_call, call, broadcasterId });
-
-  if (is_call && !call && broadcasterId) {
-    setIsLoading(true);
-    setTimeout(() => startView(videoEl, setIsLoading), 2000);
-  }
-};
-
-/* =======================
-   Init Viewer
+   Setup Watcher
 ======================= */
 export const setupWatcher = (videoEl, setIsLoading = () => {}) => {
   if (!videoEl) return;
-  cleanup();
+
+  stopWatcher(); // cleanup old connection
 
   /* ---- Peer ---- */
   peer = new Peer(undefined, CONFIG.PEER);
@@ -164,7 +148,7 @@ export const setupWatcher = (videoEl, setIsLoading = () => {}) => {
   /* ---- Socket ---- */
   socket = io(CONFIG.SIGNALING_URL, {
     auth: { token: "VIEWER_SECRET_456" },
-    transports: ["websocket", "polling"],
+    transports: ["websocket"],
     reconnection: true
   });
 
@@ -181,9 +165,7 @@ export const setupWatcher = (videoEl, setIsLoading = () => {}) => {
 
   socket.on("broadcast-stopped", () => {
     warn("Broadcast stopped");
-    broadcasterId = null;
-    if (call) call.close();
-    call = null;
+    stopWatcher();
     setIsLoading(true);
   });
 
@@ -191,5 +173,5 @@ export const setupWatcher = (videoEl, setIsLoading = () => {}) => {
     warn("Socket disconnected");
   });
 
-  window.addEventListener("beforeunload", cleanup);
+  window.addEventListener("beforeunload", stopWatcher);
 };

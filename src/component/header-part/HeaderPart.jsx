@@ -12,6 +12,7 @@ import fullscreenOutIcon from "../../assets/fullscreen_out.png";
 import { getSocket, sendEvent } from "../../signals/socketConnection";
 import { filter } from "framer-motion/client";
 import cardImages from "../../assets/cards";
+import { stopWatcher } from "../../socket.io/setupWatcher";
 
 function HeaderPart({ muted, setMuted, roomId }) {
   const navigate = useNavigate();
@@ -84,8 +85,9 @@ function HeaderPart({ muted, setMuted, roomId }) {
   };
 
   const handleBack = () => {
-    navigate(-1);
-  };
+  stopWatcher();   // 🔥 Stop WebRTC
+  navigate(-1);
+};
 
   // Auto fullscreen on page load
   useEffect(() => {
