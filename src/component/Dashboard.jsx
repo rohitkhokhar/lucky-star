@@ -93,11 +93,14 @@ const Dashboard = () => {
 
         rooms.forEach((room) => {
           formattedCounters[room.roomId] = {
-            online_room_counter: room.online_room_counter ?? 0,
+            online_room_counter:
+              room.online_room_counter && room.online_room_counter > 0
+                ? room.online_room_counter
+                : 0,
             start_time: room.start_time ?? "--",
             close_time: room.close_time ?? "--",
             game_state: room.game_state ?? "",
-            is_online: room.is_online ?? false, 
+            is_online: room.is_online ?? false,
           };
         });
 
@@ -220,15 +223,14 @@ const Dashboard = () => {
               />
             </div>
             <p
-  className={`mt-2 font-semibold ${
-    roomCounters["table2"]?.is_online
-      ? "text-green-500"
-      : "text-red-600"
-  }`}
->
-  {roomCounters["table2"]?.is_online ? "🟢 Online" : "🔴 Offline"}
-</p>
-
+              className={`mt-2 font-semibold ${
+                roomCounters["table2"]?.is_online
+                  ? "text-green-500"
+                  : "text-red-600"
+              }`}
+            >
+              {roomCounters["table2"]?.is_online ? "🟢 Online" : "🔴 Offline"}
+            </p>
 
             <p className="text-xs">
               Users: {roomCounters["table2"]?.online_room_counter ?? 0}

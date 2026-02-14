@@ -119,7 +119,9 @@ export const socketConnect = () => {
 
           rooms.forEach((room) => {
             roomCounters[room.roomId] = {
-              online_room_counter: room.online_room_counter ?? 0,
+              online_room_counter: room.online_room_counter && room.online_room_counter > 0
+                ? room.online_room_counter
+                : 0,
               start_time: room.start_time ?? "--",
               close_time: room.close_time ?? "--",
               game_state: room.game_state ?? "",
