@@ -7,6 +7,12 @@ import border2 from "../../assets/border2.png";
 import border3 from "../../assets/border3.png";
 import border4 from "../../assets/border4.png";
 import border5 from "../../assets/border5.png";
+import baharWins from "../../assets/audio/bahar_wins.mp3";
+import andarWins from "../../assets/audio/andar_wins.mp3";
+import firstShootBahar from "../../assets/audio/first_shoot_bahar.mp3";
+import secondShootBahar from "../../assets/audio/second_shoot_bahar.mp3";
+import firstShootAndar from "../../assets/audio/first_shoot_andar.mp3";
+import secondShootAndar from "../../assets/audio/second_shoot_andar.mp3";
 import { useDispatch, useSelector } from "react-redux";
 import Box1 from "./Box1";
 import Box2 from "./Box2";
@@ -19,6 +25,15 @@ import {
 import Toast from "./Toast";
 
 let localCoinPositions = [];
+
+const audioMap = {
+  baharWins: new Audio(baharWins),
+  andarWins: new Audio(andarWins),
+  firstShootBahar: new Audio(firstShootBahar),
+  firstShootAndar: new Audio(firstShootAndar),
+  secondShootBahar: new Audio(secondShootBahar),
+  secondShootAndar: new Audio(secondShootAndar),
+};
 function FooterPart({ roomId }) {
   // const user = useSelector((state) => state.auth.user);
   const user = JSON.parse(localStorage.getItem("user")) ?? null;
@@ -116,6 +131,34 @@ function FooterPart({ roomId }) {
       socket.off("res", handleUpdatedWallet);
     };
   }, []);
+
+  const playWinnerAudio = (winSide, betNo) => {
+    try {
+      let audio;
+
+      if (betNo === "first_bet") {
+        audio =
+          winSide === "bahar"
+            ? audioMap.firstShootBahar
+            : audioMap.firstShootAndar;
+      } else if (betNo === "second_bet") {
+        audio =
+          winSide === "bahar"
+            ? audioMap.secondShootBahar
+            : audioMap.secondShootAndar;
+      } else {
+        audio = 
+          winSide === "bahar" 
+          ? audioMap.baharWins 
+          : audioMap.andarWins; 
+      }
+
+      audio.currentTime = 0;
+      audio.play().catch(() => {});
+    } catch (err) {
+      console.log("Audio play error:", err);
+    }
+  };
 
   useEffect(() => {
     const socket = getSocket();
@@ -404,6 +447,13 @@ function FooterPart({ roomId }) {
 
         case "LIVE_GAME_WINNER":
           setGameState(data.game_state);
+          console.log(data)
+          const winSide = data.win_side.toLowerCase();
+          const betNo = data.win_round;
+
+          console.log("PLAY AUDIO", winSide, betNo);
+
+          playWinnerAudio(winSide, betNo);
 
           setToastMessage(() => {
             const winSide = data.win_side.toLowerCase();

@@ -38,7 +38,7 @@ function HeaderPart({ muted, setMuted, roomId }) {
       const { en, data } = response;
       const text = data?.announcement_text?.trim();
 
-      console.log("Received announcement:", text);  
+      // console.log("Received announcement:", text);  
       // ❌ Empty or missing announcement → HIDE
       if (!text) {
         setAnnouncement("");
@@ -146,10 +146,7 @@ function HeaderPart({ muted, setMuted, roomId }) {
             {roomId.replace(/(\d+)/, " $1").toUpperCase()} : MIN BET{" "}
             {min_max_config?.min}
           </p>
-        </div>
-
-        {/* CENTER */}
-        <div className="flex-1 flex justify-center z-10">
+          
           {showAnnouncement && (
             <h5
               className={`text-xl sm:text-sm font-semibold px-4 py-2 transition-all duration-300
@@ -159,6 +156,10 @@ function HeaderPart({ muted, setMuted, roomId }) {
               📢 Announcement : {announcement}
             </h5>
           )}
+        </div>
+
+        {/* CENTER */}
+        <div className="flex-1 flex justify-center z-10">
         </div>
 
         {/* RIGHT */}

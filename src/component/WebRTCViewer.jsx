@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { setupWatcher, stopWatcher } from "../socket.io/setupWatcher";
 
-const WebRTCViewer = ({ muted }) => {
+const WebRTCViewer = ({ muted, roomId }) => {
   const videoRef = useRef(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -13,14 +13,13 @@ const WebRTCViewer = ({ muted }) => {
 
   useEffect(() => {
     if (videoRef.current) {
-      setupWatcher(videoRef.current, setIsLoading);
+      setupWatcher(videoRef.current, setIsLoading, roomId);
     }
 
     return () => {
-      console.log("🛑 WebRTCViewer unmounted");
       stopWatcher();
     };
-  }, []);
+  }, [roomId]);
 
   return (
     <div className="absolute w-full top-0">
@@ -42,4 +41,4 @@ const WebRTCViewer = ({ muted }) => {
   );
 };
 
-export default WebRTCViewer;
+export default WebRTCViewer;  

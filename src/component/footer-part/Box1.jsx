@@ -54,7 +54,7 @@ function Box1({
         className="w-[40%] lg:w-[55%] pb-3"
       />
 
-      <div className="w-full h-[25%] flex justify-center items-center ">
+      <div className="w-full h-[25%] flex justify-center items-center gap-2 px-2">
         {coins.map((coin, index) => {
           // console.log(coin.value > userBalance)
           const isDisabled = !canPlace || coin.value > userBalance;
