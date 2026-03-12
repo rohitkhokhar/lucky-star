@@ -148,7 +148,7 @@ function Login() {
                 </button>
               </form>
 
-              <div className="flex justify-between text-sm mt-4">
+              <div className="flex justify-between mt-4 md:mt-6 text-xs md:text-sm">
                 <p>
                   Don't have an account?{" "}
                   <Link

@@ -106,7 +106,7 @@ function Signup() {
             />
           </div>
           <div className="w-1/2 flex flex-col justify-center text-center">
-            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4 md:mb-6">
+            <h1 className="text-3xl font-bold mb-6">
               Signup
             </h1>
             {errorMessage && (
@@ -165,7 +165,7 @@ function Signup() {
               />
               <button
                 type="submit"
-                className="w-full bg-gray-600 hover:bg-gray-500 text-white p-2 md:p-3 rounded"
+                className="w-full bg-gray-600 hover:bg-gray-500 text-white p-2 md:p-3 rounded font-bold"
               >
                 {!otpSent ? "Signup" : "Send OTP"}
               </button>
