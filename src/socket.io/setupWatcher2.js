@@ -112,7 +112,6 @@ const startView = (videoEl, setIsLoading) => {
     videoEl.srcObject = stream;
     videoEl.muted = true;
     videoEl.play().catch(() => {});
-    
     socket.emit("viewer-join");
     is_call = true;
     setIsLoading(false);

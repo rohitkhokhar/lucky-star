@@ -4,6 +4,9 @@ import Peer from "peerjs";
 /* =========================
    Base CONFIG (same format)
 ========================= */
+const log = (...a) => console.log("[webrtc]", ...a);
+const warn = (...a) => console.warn("[webrtc]", ...a);
+const err = (...a) => console.error("[webrtc]", ...a);
 
 const BASE_CONFIG = {
   SIGNALING_URL: "https://llive-stream-socket.liveluckystar.com",
@@ -46,12 +49,12 @@ const TABLE_CONFIG = {
 /* =========================
    Globals
 ========================= */
-
 let socket = null;
 let peer = null;
 let call = null;
 let broadcasterId = null;
 let peerReady = false;
+let is_call = false;
 
 /* =========================
    Dummy Stream
@@ -113,31 +116,46 @@ export const stopWatcher = () => {
 const startView = (videoEl, setIsLoading) => {
   if (!broadcasterId || !peerReady || call) return;
 
+  log("Calling broadcaster:", broadcasterId);
   setIsLoading(true);
 
   call = peer.call(broadcasterId, createDummyStream());
 
   call.on("stream", (stream) => {
+    log("Remote stream received");
     videoEl.srcObject = stream;
     videoEl.muted = true;
     videoEl.play().catch(() => {});
-
+    socket.emit("viewer-join");
+    is_call = true;
     setIsLoading(false);
   });
 
   call.on("close", () => {
+    socket.emit("viewer-leave");
     call = null;
     setIsLoading(true);
-
-    setTimeout(() => {
-      startView(videoEl, setIsLoading);
-    }, 2000);
+    autoReconnect(videoEl, setIsLoading);
   });
 
-  call.on("error", () => {
+  call.on("error", (e) => {
+    err("Call error", e);
+    socket.emit("viewer-leave");
     call = null;
-    setIsLoading(true);
+    autoReconnect(videoEl, setIsLoading);
   });
+};
+
+/* =======================
+   Auto Reconnect (OLD LOGIC)
+======================= */
+const autoReconnect = (videoEl, setIsLoading) => {
+  log("autoReconnect check:", { is_call, call, broadcasterId });
+
+  if (is_call && !call && broadcasterId) {
+    setIsLoading(true);
+    setTimeout(() => startView(videoEl, setIsLoading), 2000);
+  }
 };
 
 /* =========================
