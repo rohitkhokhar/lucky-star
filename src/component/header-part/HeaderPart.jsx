@@ -274,14 +274,12 @@ function HeaderPart({ muted, setMuted, roomId }) {
                           minute: "2-digit",
                         })}
                       </td>
-                      <td
-                        className={`px-4 py-2 ${
-                          item.total_win_amount - item.total_bet_amount < 0
-                            ? "text-gray-500"
-                            : "text-yellow-600"
-                        } text-center `}
-                      >
-                        {item.total_bet_amount || 0}
+                      <td className="px-4 py-2 text-center">
+                        {item.card_details &&
+                          Object.entries(item.card_details)
+                            .map(([betType, amount]) => `${betType}: ₹${amount}`)
+                            .join(", ")
+                        }
                       </td>
                       <td className="px-4 py-2 text-center">
                         {item.total_win_amount}
