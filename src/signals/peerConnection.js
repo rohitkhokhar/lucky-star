@@ -10,7 +10,7 @@ export const peerConnection = async (room_id) => {
   // socket = io(url);
 
   socket = new Peer({
-    host: "llive-stream.liveluckystar.com",
+    host: "llive-stream.122436.com",
     path: "/peerjs",
     secure: true, // Set to `true` if your server is using HTTPS
     // port: 443, // Change if needed (default for HTTPS)

@@ -61,7 +61,7 @@ export const setupWatcher = (videoElement, setIsLoading = () => { }) => {
 
   // Setup PeerJS
   peer = new Peer(undefined, {
-    host: "llive-stream.liveluckystar.com",
+    host: "llive-stream.122436.com",
     path: "/peerjs",
     secure: true,
     debug: 1,
@@ -83,7 +83,7 @@ export const setupWatcher = (videoElement, setIsLoading = () => { }) => {
   });
 
   // Setup socket
-  socket = io("https://llive-stream-socket.liveluckystar.com", {
+  socket = io("https://llive-stream-socket.122436.com", {
     transports: ["websocket"],
     reconnection: true,
   });

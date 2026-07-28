@@ -13,9 +13,9 @@ const err = (...a) => console.error("[webrtc]", ...a);
    Config
 ======================= */
 const CONFIG = {
-  SIGNALING_URL: "https://llive-stream-table2-socket.liveluckystar.com",
+  SIGNALING_URL: "https://llive-stream-table2-socket.122436.com",
   PEER: {
-    host: "llive-stream-table2.liveluckystar.com",
+    host: "llive-stream-table2.122436.com",
     path: "/peerjs",
     secure: true,
     query: { token: "VIEWER_SECRET_456" },

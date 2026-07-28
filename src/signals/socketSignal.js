@@ -14,7 +14,7 @@ const config = {
   ]
 };
 
-const socket = io.connect('https://llive-stream.liveluckystar.com/');
+const socket = io.connect('https://llive-stream.122436.com/');
 
 socket.on("offer", (id, description) => {
   peerConnection = new RTCPeerConnection(config);

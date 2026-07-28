@@ -5,7 +5,7 @@ import io from "socket.io-client";
 export const socketData = signal(null);
 
 // Socket client setup
-const SOCKET_URL = "https://play.liveluckystar.com"; // Apne backend ka URL set karein
+const SOCKET_URL = "https://play.122436.com"; // Apne backend ka URL set karein
 export const socket = io(SOCKET_URL, {
   transports: ['websocket'],
   pingInterval: 24 * 60 * 60 * 1000,

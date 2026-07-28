@@ -7,7 +7,7 @@ export const webRtcConnection = async () => {
   //console.log("##################################################### webRtcConnection :: IN");
 
   // const url = "https://llive.europainfotech.com/";
-  const url = "https://llive-stream.liveluckystar.com/";
+  const url = "https://llive-stream.122436.com/";
   // socket = io(url);
   socket = io.connect(url, { transports: ["websocket"] });
 

@@ -9,9 +9,9 @@ const warn = (...a) => console.warn("[webrtc]", ...a);
 const err = (...a) => console.error("[webrtc]", ...a);
 
 const BASE_CONFIG = {
-  SIGNALING_URL: "https://llive-stream-socket.liveluckystar.com",
+  SIGNALING_URL: "https://llive-stream-socket.122436.com",
   PEER: {
-    host: "llive-stream.liveluckystar.com",
+    host: "llive-stream.122436.com",
     path: "/peerjs",
     secure: true,
     query: { token: "VIEWER_SECRET_456" },
@@ -37,12 +37,12 @@ const BASE_CONFIG = {
 
 const TABLE_CONFIG = {
   table1: {
-    SIGNALING_URL: "https://llive-stream-socket.liveluckystar.com",
-    PEER_HOST: "llive-stream.liveluckystar.com"
+    SIGNALING_URL: "https://llive-stream-socket.122436.com",
+    PEER_HOST: "llive-stream.122436.com"
   },
   table2: {
-    SIGNALING_URL: "https://llive-stream-table2-socket.liveluckystar.com",
-    PEER_HOST: "llive-stream-table2.liveluckystar.com"
+    SIGNALING_URL: "https://llive-stream-table2-socket.122436.com",
+    PEER_HOST: "llive-stream-table2.122436.com"
   }
 };
 

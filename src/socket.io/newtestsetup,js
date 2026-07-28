@@ -44,7 +44,7 @@ const createEmptyVideoTrack = (videoElement) => {
 export const setupWatcher = (videoElement, loaderElement = null) => {
   //console.log("webrtc: Initializing watcher...");
 
-  socket = io("https://test-sream.liveluckystar.com", { transports: ["websocket"] });
+  socket = io("https://test-sream.122436.com", { transports: ["websocket"] });
 
   socket.on("connect", () => {
     //console.log("webrtc: Connected to socket server.");

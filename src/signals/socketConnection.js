@@ -39,7 +39,7 @@ const forceLogout = () => {
 
 export const socketConnect = () => {
   if (!socket) {
-    const url = "https://play.liveluckystar.com";
+    const url = "https://play.122436.com";
 
     socket = io(url, {
       transports: ["websocket"],
