@@ -85,9 +85,12 @@ function HeaderPart({ muted, setMuted, roomId }) {
   };
 
   const handleBack = () => {
-  stopWatcher();   // 🔥 Stop WebRTC
-  navigate(-1);
-};
+    const socket = getSocket();
+    if (!socket) return;
+    stopWatcher();   // 🔥 Stop WebRTC
+    sendEvent("LIVE_GAME_CLOSE_GAME",{});
+    navigate(-1);
+  };
 
   // Auto fullscreen on page load
   useEffect(() => {
