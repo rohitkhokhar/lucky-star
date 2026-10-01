@@ -256,6 +256,36 @@ const Dashboard = () => {
               <p className="mt-2 text-red-600 font-semibold">🔴 Offline</p>
             </div>
           ))}
+
+          
+          <Link to="/live/jumbo/table1" className="flex flex-col items-center group">
+            <div className="w-28 h-16 bg-white border-4 rounded-lg overflow-hidden group-hover:scale-105 transition">
+              <img
+                src={LuckyStarimage2}
+                className="w-full h-full object-cover"
+                alt=""
+              />
+            </div>
+            <p
+              className={`mt-2 font-semibold ${
+                roomCounters["table2"]?.is_online
+                  ? "text-green-500"
+                  : "text-red-600"
+              }`}
+            >
+              {roomCounters["table2"]?.is_online ? "🟢 Online" : "🔴 Offline"}
+            </p>
+
+            <p className="text-xs">
+              Users: {roomCounters["table2"]?.online_room_counter ?? 0}
+            </p>
+            <p className="text-xs">
+              Opening: {roomCounters["table2"]?.start_time ?? "--"}
+            </p>
+            <p className="text-xs">
+              Closing: {roomCounters["table2"]?.close_time ?? "--"}
+            </p>
+          </Link>
         </div>
 
         {/* Actions */}

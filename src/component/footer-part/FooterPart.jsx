@@ -147,14 +147,14 @@ function FooterPart({ roomId }) {
             ? audioMap.secondShootBahar
             : audioMap.secondShootAndar;
       } else {
-        audio = 
-          winSide === "bahar" 
-          ? audioMap.baharWins 
-          : audioMap.andarWins; 
+        audio =
+          winSide === "bahar"
+            ? audioMap.baharWins
+            : audioMap.andarWins;
       }
 
       audio.currentTime = 0;
-      audio.play().catch(() => {});
+      audio.play().catch(() => { });
     } catch (err) {
       console.log("Audio play error:", err);
     }
@@ -825,9 +825,8 @@ function FooterPart({ roomId }) {
       } else {
         // ✅ Bet approved
         setToastMessage(
-          `Bet Placed: ${andarBet > 0 ? `Andar ₹${andarBet} ` : ""}${
-            baharBet > 0 ? `Bahar ₹${baharBet}` : ""
-          }`.trim(),
+          `Bet Placed: ${andarBet > 0 ? `Andar ₹${andarBet} ` : ""}${baharBet > 0 ? `Bahar ₹${baharBet}` : ""
+            }`.trim(),
         );
         setToastType("success");
         //console.log("Bet successfully placed:", totalBet);

@@ -8,6 +8,7 @@ import {
 import RotateScreenWarning from "./component/RotateWarning";
 import Login from "./component/Login";
 import HorizontalDesign from "./component/HorizontalDesign";
+import HorizontalDesignJumbo from "./component/jumbo/HorizontalDesignJumbo";
 import Signup from "./component/Signup";
 import PrivacyPolicy from "./component/PrivacyPolicy";
 import TermsAndConditions from "./component/TermsAndConditions";
@@ -140,6 +141,24 @@ const App = () => {
               {socketConnected ? (
                 isLandscape ? (
                   <HorizontalDesign />
+                ) : (
+                  <RotateScreenWarning />
+                )
+              ) : (
+                <div style={{ textAlign: "center", padding: "2rem" }}>
+                  Connecting to server...
+                </div>
+              )}
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/live/jumbo/:tableId"
+          element={
+            <PrivateRoute>
+              {socketConnected ? (
+                isLandscape ? (
+                  <HorizontalDesignJumbo />
                 ) : (
                   <RotateScreenWarning />
                 )
