@@ -123,11 +123,13 @@ function FooterPart({ roomId }) {
   const [hasPlacedBet, setHasPlacedBet] = useState(false);
   const [btnDisabled, setBtnDisabled] = useState(false);
   const [isPlacingBet, setIsPlacingBet] = useState(false);
+  const [resultHistory, setResultHistory] = useState([]);
 
 
   const [openWinCard, setOpenWinCard] = useState(null);
   const [winNumber, setWinNumber] = useState(null);
   const [closeWinCard, setCloseWinCard] = useState(null);
+  const [winColorCard, setWinColorCard] = useState(null);
 
   const [betAmounts, setBetAmounts] = useState({
     first: 0,
@@ -286,6 +288,14 @@ function FooterPart({ roomId }) {
   };
 };
 
+const [winX, setWinX] = useState({
+  single: 90,
+  single_pana: 1500,
+  double_pana: 2500,
+  triple_pana: 7500,
+  jodi: 900,
+});
+
   useEffect(() => {
     const socket = getSocket();
     if (!socket) return;
@@ -316,9 +326,14 @@ function FooterPart({ roomId }) {
         case "LIVE_GAME_INFO":
           console.log("LIVE_MATKA_GAME_INFO data:", data);
           setData(data);
-          
+          setWinX(data?.win_x || {});
+          setWinColorCard(data?.win_color_card || null);
+          if(data?.draw_details?.open?.state === "bet" ) {
+            setMarketType("open");
+          } else if(data?.draw_details?.open?.state === "lock") {
+            setMarketType("close");
+          } 
           const parsedWinCard = parseWinCard(data?.win_card);
-
             console.log("RESTORE WIN CARD:", {
               win_card: data?.win_card,
               draw_details: data?.draw_details,
@@ -516,11 +531,13 @@ function FooterPart({ roomId }) {
         case "LIVE_MATKA_GAME_START_ROUND":
         case "LIVE_GAME_START_ROUND":
           setGameState(data.game_state || "round_start");
-          setBtnDisabled(true);
+          setBtnDisabled(true); 
+          setMarketType("open");
 
           setOpenWinCard(null);
           setWinNumber(null);
           setCloseWinCard(null);
+          setWinColorCard(null);
 
           setShowBetPreview(false);
           dispatch(clearBets());
@@ -585,26 +602,26 @@ function FooterPart({ roomId }) {
           setToastKey((prev) => prev + 1);
 
           // Update user balance from start_point
-          if (data?.start_point !== undefined && data.start_point !== null) {
-            const updatedBal = Number(data.start_point);
-            setUserBalance(updatedBal);
-            localStorage.setItem("total_wallet", JSON.stringify(updatedBal));
-            const storedUser = JSON.parse(localStorage.getItem("user")) ?? user;
-            if (storedUser) {
-              const updatedUser = { ...storedUser, chips: updatedBal };
-              localStorage.setItem("user", JSON.stringify(updatedUser));
-            }
-          } else {
-            const currentBal = total_wallet ?? userBalance ?? 0;
-            const newBal = Math.max(0, currentBal - Number(placedAmount));
-            setUserBalance(newBal);
-            localStorage.setItem("total_wallet", JSON.stringify(newBal));
-            const storedUser = JSON.parse(localStorage.getItem("user")) ?? user;
-            if (storedUser) {
-              const updatedUser = { ...storedUser, chips: newBal };
-              localStorage.setItem("user", JSON.stringify(updatedUser));
-            }
-          }
+          // if (data?.start_point !== undefined && data.start_point !== null) {
+          //   const updatedBal = Number(data.start_point);
+          //   setUserBalance(updatedBal);
+          //   localStorage.setItem("total_wallet", JSON.stringify(updatedBal));
+          //   const storedUser = JSON.parse(localStorage.getItem("user")) ?? user;
+          //   if (storedUser) {
+          //     const updatedUser = { ...storedUser, chips: updatedBal };
+          //     localStorage.setItem("user", JSON.stringify(updatedUser));
+          //   }
+          // } else {
+          //   const currentBal = total_wallet ?? userBalance ?? 0;
+          //   const newBal = Math.max(0, currentBal - Number(placedAmount));
+          //   setUserBalance(newBal);
+          //   localStorage.setItem("total_wallet", JSON.stringify(newBal));
+          //   const storedUser = JSON.parse(localStorage.getItem("user")) ?? user;
+          //   if (storedUser) {
+          //     const updatedUser = { ...storedUser, chips: newBal };
+          //     localStorage.setItem("user", JSON.stringify(updatedUser));
+          //   }
+          // }
 
           // Update data total bets in game
           setData((prev) => ({
@@ -717,6 +734,12 @@ function FooterPart({ roomId }) {
           break;
         }
 
+        case "LIVE_MATKA_GAME_OPEN_BET_LOCK":{
+          setMarketType("close");
+
+          break;
+        }
+
         case "LIVE_MATKA_GAME_BET_LOCK":
         case "LIVE_GAME_BET_LOCK": {
           setBtnDisabled(true);
@@ -787,28 +810,44 @@ function FooterPart({ roomId }) {
           break;
         }
 
+        case "LIVE_MATKA_GAME_UPDATE_X_CONFIGS": {
+           setWinX((prev) => ({
+            ...prev,
+            ...(data?.win_x || {}),
+          }));
+          break;
+        }
+
         case "LIVE_MATKA_GAME_WINNER":
-        case "LIVE_GAME_WINNER":
-          setGameState(data.game_state || "winner");
-          setBtnDisabled(true);
-          setShowBetPreview(false);
+        case "LIVE_GAME_WINNER": {
+          setGameState(data.game_state);
+          const { win_type, win_card, win_color_card } = data;
+          
+          console.log("LIVE_MATKA_GAME_WINNER data:", gameState, data);
+          // setBtnDisabled(true);
+          // setShowBetPreview(false);
           dispatch(clearBets());
           console.log(data);
           console.log("WINNER RESPONSE:", data);
-
-          const { win_type, win_card } = data;
           const parsed = parseWinCard(win_card);
+
+          // WIN COLOR CARDS
+          setWinColorCard(win_color_card || null);
 
           if (win_type === "open") {
             setOpenWinCard(parsed.openCard);
             setWinNumber(parsed.number);
             setCloseWinCard(null);
+            setMarketType("close");
           }
 
           if (win_type === "close") {
             setOpenWinCard(parsed.openCard);
             setWinNumber(parsed.number);
             setCloseWinCard(parsed.closeCard);
+            
+            setBtnDisabled(true);
+            setShowBetPreview(false);
           }
 
           const winSide = data.win_side ? data.win_side.toLowerCase() : "";
@@ -882,9 +921,10 @@ function FooterPart({ roomId }) {
           setCoinHistory([]);
           setToastKey((prev) => prev + 1);
           break;
+        }
 
         case "LIVE_MATKA_GAME_END_ROUND":
-        case "LIVE_GAME_END_ROUND":
+        case "LIVE_GAME_END_ROUND": {
           setGameState(data.game_state || "round_end");
           setBtnDisabled(true);
           setShowBetPreview(false);
@@ -904,9 +944,10 @@ function FooterPart({ roomId }) {
           setRoundTimers({ open: null, close: null, receivedAt: null });
           setToastKey((prev) => prev + 1);
           break;
+        }
 
         case "LIVE_MATKA_GAME_ROUND_WIN":
-        case "LIVE_GAME_ROUND_WIN":
+        case "LIVE_GAME_ROUND_WIN": {
           if (data.user_id === user?._id) {
             setToastMessage(() => {
               const winSide = data.win_side?.toLowerCase();
@@ -967,23 +1008,23 @@ function FooterPart({ roomId }) {
             setToastKey((prev) => prev + 1);
           }
           break;
+        }
+
+        case "LIVE_MATKA_GAME_RESULT_HISTORY": {
+          if (data && data.time_result) {
+            setResultHistory(data.time_result);
+          }
+        }
 
         case "LIVE_MATKA_GAME_ROUND_LOSE":
-        case "LIVE_GAME_ROUND_LOSE":
+        case "LIVE_GAME_ROUND_LOSE": {
           if (data.user_id === user?._id) {
             setToastMessage("😞 You lost this round. Better luck next time!");
             setToastType("error");
             setToastKey((prev) => prev + 1);
           }
           break;
-
-        case "LIVE_MATKA_GAME_WINNER":
-          if (data.user_id === user?._id) {
-            setToastMessage("😞 You lost this round. Better luck next time!");
-            setToastType("error");
-            setToastKey((prev) => prev + 1);
-          }
-          break;
+        }
 
         default:
           console.warn("Unhandled event:", en);
@@ -1286,7 +1327,7 @@ function FooterPart({ roomId }) {
   //   </div>
   // );
 
-  console.log(openWinCard, closeWinCard, winNumber);
+  // console.log(openWinCard, closeWinCard, winNumber);
 
   return (
     <>
@@ -1463,6 +1504,7 @@ function FooterPart({ roomId }) {
           opencard={openWinCard}
           winumber={winNumber}
           closecard={closeWinCard}
+          winColorCard={winColorCard}
           total_wallet={total_wallet}
           userBalance={userBalance}
           selectedCoin={selectedCoin}
@@ -1475,6 +1517,8 @@ function FooterPart({ roomId }) {
           data={data}
           selectedCoin={selectedCoin}
           totalBet={totalBet}
+          winX={winX}
+          resultHistory={resultHistory}
         />
       </div>
     </>

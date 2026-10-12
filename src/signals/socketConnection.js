@@ -40,7 +40,7 @@ const forceLogout = () => {
 export const socketConnect = () => {
   if (!socket) {
     // const url = "https://play.122436.com";
-    const url = "http://3.110.44.131:3001";
+    const url = "https://jumbo-server.122436.com";
 
     socket = io(url, {
       transports: ["websocket"],

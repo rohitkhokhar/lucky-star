@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { setupWatcher, stopWatcher } from "../../socket.io/setupWatcher";
+import { setupWatcherjombo, stopWatcherjombo } from "../../socket.io/setupWatcherjombo";
 
 const WebRTCViewerJumbo = ({ muted, roomId = "table1" }) => {
   const videoRef = useRef(null);
@@ -13,11 +13,11 @@ const WebRTCViewerJumbo = ({ muted, roomId = "table1" }) => {
 
   useEffect(() => {
     if (videoRef.current) {
-      setupWatcher(videoRef.current, setIsLoading, roomId);
+      setupWatcherjombo(videoRef.current, setIsLoading, roomId);
     }
 
     return () => {
-      stopWatcher();
+      stopWatcherjombo();
     };
   }, [roomId]);
 

@@ -19,20 +19,31 @@ import { removeBet, clearBets } from "../../../redux/betSlice";
 // Parse Matka record (e.g. "244-03-706|11:44:19 PM - 11:45:19 PM" or "976-58-617")
 const parseMatkaHistoryItem = (item) => {
   if (!item) return null;
-  const s = typeof item === "string" ? item : item.win_card || item.result || item.draw_result || "";
+  const s =
+    typeof item === "string"
+      ? item
+      : item.win_card || item.result || item.draw_result || "";
   if (!s) return null;
 
   const [resPart] = s.split("|");
   const cleaned = resPart.trim();
 
   // Pattern: 3 digits - 1-2 digits - 3 digits (e.g. "244-03-706", "976-58-617")
-  const match = cleaned.match(/^(\d{3})\s*[-|]\s*(\d{1,2}|\*{1,2})\s*[-|]\s*(\d{3})/);
+  const match = cleaned.match(
+    /^(\d{3})\s*[-|]\s*(\d{1,2}|\*{1,2})\s*[-|]\s*(\d{3})/,
+  );
   if (match) {
     const openPatti = match[1];
     const jodi = match[2].replace(/\*/g, "");
     const closePatti = match[3];
-    const openDigit = jodi && jodi.length > 0 ? jodi[0] : String(openPatti.split("").reduce((a, b) => a + Number(b), 0) % 10);
-    const closeDigit = jodi && jodi.length > 1 ? jodi[1] : String(closePatti.split("").reduce((a, b) => a + Number(b), 0) % 10);
+    const openDigit =
+      jodi && jodi.length > 0
+        ? jodi[0]
+        : String(openPatti.split("").reduce((a, b) => a + Number(b), 0) % 10);
+    const closeDigit =
+      jodi && jodi.length > 1
+        ? jodi[1]
+        : String(closePatti.split("").reduce((a, b) => a + Number(b), 0) % 10);
     return {
       openPatti,
       openDigit,
@@ -46,8 +57,12 @@ const parseMatkaHistoryItem = (item) => {
   if (match2) {
     const openPatti = match2[1];
     const closePatti = match2[2];
-    const openDigit = String(openPatti.split("").reduce((a, b) => a + Number(b), 0) % 10);
-    const closeDigit = String(closePatti.split("").reduce((a, b) => a + Number(b), 0) % 10);
+    const openDigit = String(
+      openPatti.split("").reduce((a, b) => a + Number(b), 0) % 10,
+    );
+    const closeDigit = String(
+      closePatti.split("").reduce((a, b) => a + Number(b), 0) % 10,
+    );
     return {
       openPatti,
       openDigit,
@@ -80,7 +95,10 @@ const DEFAULT_RESULT_FALLBACK = [
 ];
 
 const getLast7DaysResultHistory = (cardsList) => {
-  const source = Array.isArray(cardsList) && cardsList.length > 0 ? cardsList : DEFAULT_RESULT_FALLBACK;
+  const source =
+    Array.isArray(cardsList) && cardsList.length > 0
+      ? cardsList
+      : DEFAULT_RESULT_FALLBACK;
   const items = [];
 
   for (let i = 0; i < 7; i++) {
@@ -91,8 +109,13 @@ const getLast7DaysResultHistory = (cardsList) => {
     const year = d.getFullYear();
     const dateStr = `${day}/${month}/${year}`;
 
-    const raw = source[i] || DEFAULT_RESULT_FALLBACK[i % DEFAULT_RESULT_FALLBACK.length];
-    const parsed = parseMatkaHistoryItem(raw) || parseMatkaHistoryItem(DEFAULT_RESULT_FALLBACK[i % DEFAULT_RESULT_FALLBACK.length]);
+    const raw =
+      source[i] || DEFAULT_RESULT_FALLBACK[i % DEFAULT_RESULT_FALLBACK.length];
+    const parsed =
+      parseMatkaHistoryItem(raw) ||
+      parseMatkaHistoryItem(
+        DEFAULT_RESULT_FALLBACK[i % DEFAULT_RESULT_FALLBACK.length],
+      );
 
     items.push({
       date: dateStr,
@@ -114,58 +137,43 @@ const DEFAULT_GAME_HISTORY = [
   { bets: 1, stake: 600 },
 ];
 
-const getLast7DaysGameHistory = (gameList, currentBets) => {
-  const betsByDate = {};
-  if (Array.isArray(gameList)) {
-    gameList.forEach((item) => {
-      if (item.draw_time) {
-        const d = new Date(item.draw_time);
-        if (!isNaN(d.getTime())) {
-          const dateStr = `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
-          if (!betsByDate[dateStr]) betsByDate[dateStr] = { bets: 0, stake: 0 };
-          betsByDate[dateStr].bets += 1;
-          let stake = 0;
-          if (item.card_details && typeof item.card_details === "object") {
-            stake = Object.values(item.card_details).reduce((s, a) => s + Number(a || 0), 0);
-          } else {
-            stake = Number(item.total_bet_amount || item.bet_amount || 0);
-          }
-          betsByDate[dateStr].stake += stake;
-        }
-      }
-    });
+const getMyGameHistory = (gameList) => {
+  if (!Array.isArray(gameList) || gameList.length === 0) {
+    return [];
   }
 
-  const items = [];
-  for (let i = 0; i < 7; i++) {
-    const d = new Date();
-    d.setDate(d.getDate() - i);
-    const day = String(d.getDate()).padStart(2, "0");
-    const month = String(d.getMonth() + 1).padStart(2, "0");
-    const year = d.getFullYear();
-    const dateStr = `${day}/${month}/${year}`;
+  return gameList
+    .filter((item) => item?.draw_time)
+    .sort((a, b) => {
+      return new Date(b.draw_time) - new Date(a.draw_time);
+    })
+    .slice(0, 50)
+    .map((item) => {
+      const d = new Date(item.draw_time);
 
-    const defaultDay = DEFAULT_GAME_HISTORY[i] || { bets: 0, stake: 0 };
-    const realDay = betsByDate[dateStr];
+      const date = `${String(d.getDate()).padStart(2, "0")}/${String(
+        d.getMonth() + 1,
+      ).padStart(2, "0")}/${d.getFullYear()}`;
 
-    let count = realDay ? realDay.bets : defaultDay.bets;
-    let totalStake = realDay ? realDay.stake : defaultDay.stake;
+      const time = d.toLocaleTimeString("en-IN", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: true,
+      });
 
-    if (i === 0 && currentBets && Object.keys(currentBets).length > 0) {
-      const liveCount = Object.keys(currentBets).length;
-      const liveStake = Object.values(currentBets).reduce((s, b) => s + Number(b.amount || 0), 0);
-      count = (realDay ? realDay.bets : defaultDay.bets) + liveCount;
-      totalStake = (realDay ? realDay.stake : defaultDay.stake) + liveStake;
-    }
-
-    items.push({
-      date: dateStr,
-      bets: count,
-      stake: totalStake,
+      return {
+        date,
+        time,
+        ticketId: item.ticket_id || "-",
+        gameId: item.game_id || "-",
+        betAmount: Number(item.total_bet_amount || 0),
+        winAmount: Number(item.total_win_amount || 0),
+        resultCard: item.result_card || "-",
+        status: item.status,
+        cardDetails: item.card_details || {},
+      };
     });
-  }
-
-  return items;
 };
 
 function HeaderPart({
@@ -182,7 +190,9 @@ function HeaderPart({
   const bets = propBets || reduxBets;
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const [activeTab, setActiveTab] = useState("result"); // "result" | "game"
+  const [showCardDetails, setShowCardDetails] = useState(false);
+  const [selectedGame, setSelectedGame] = useState(null);
+  const [activeTab, setActiveTab] = useState("game"); // "result" | "game"
   const [gameList, setGameList] = useState([]);
   const [announcement, setAnnouncement] = useState("");
   const [showAnnouncement, setShowAnnouncement] = useState(false);
@@ -289,12 +299,22 @@ function HeaderPart({
 
     const handleGameHistory = (response) => {
       const { en, data } = response || {};
-      if (data?.last_win_cards && Array.isArray(data.last_win_cards) && data.last_win_cards.length > 0) {
+
+      if (
+        data?.last_win_cards &&
+        Array.isArray(data.last_win_cards) &&
+        data.last_win_cards.length > 0
+      ) {
         setLastWinCards(data.last_win_cards);
+
         try {
-          sessionStorage.setItem("last_win_cards", JSON.stringify(data.last_win_cards));
+          sessionStorage.setItem(
+            "last_win_cards",
+            JSON.stringify(data.last_win_cards),
+          );
         } catch (e) {}
       }
+
       if (data?.game_lists && Array.isArray(data.game_lists)) {
         setGameList(data.game_lists);
       }
@@ -307,12 +327,69 @@ function HeaderPart({
     };
   }, []);
 
+  const getResultHistoryFromGameList = (gameList) => {
+    if (!Array.isArray(gameList) || gameList.length === 0) {
+      return [];
+    }
+
+    const grouped = {};
+
+    gameList.forEach((item) => {
+      if (!item?.result_card || !item?.draw_time) return;
+
+      const date = new Date(item.draw_time);
+
+      if (isNaN(date.getTime())) return;
+
+      const dateStr = `${String(date.getDate()).padStart(2, "0")}/${String(
+        date.getMonth() + 1,
+      ).padStart(2, "0")}/${date.getFullYear()}`;
+
+      if (!grouped[dateStr]) {
+        grouped[dateStr] = {
+          date: dateStr,
+          openText: "",
+          closeText: "",
+          openTime: null,
+          closeTime: null,
+        };
+      }
+
+      const result = item.result_card.trim();
+
+      // (Open) 333-9
+      const openMatch = result.match(/^\(Open\)\s*(\d{3})-(\d)$/i);
+
+      // (Close) 9-333
+      const closeMatch = result.match(/^\(Close\)\s*(\d)-(\d{3})$/i);
+
+      if (openMatch) {
+        grouped[dateStr].openText = `${openMatch[1]} - ${openMatch[2]}`;
+        grouped[dateStr].openTime = date.getTime();
+      }
+
+      if (closeMatch) {
+        grouped[dateStr].closeText = `${closeMatch[1]} - ${closeMatch[2]}`;
+        grouped[dateStr].closeTime = date.getTime();
+      }
+    });
+
+    return Object.values(grouped)
+      .sort((a, b) => {
+        const aTime = Math.max(a.openTime || 0, a.closeTime || 0);
+        const bTime = Math.max(b.openTime || 0, b.closeTime || 0);
+
+        return bTime - aTime;
+      })
+      .slice(0, 7);
+  };
+
   // Trigger history request and open modal
   const handleRefreshClick = () => {
     const socket = getSocket();
     if (socket) {
-      sendEvent("LIVE_GAME_GAME_HISTORY", {
-        en: "LIVE_GAME_GAME_HISTORY",
+      sendEvent("LIVE_MATKA_GAME_GAME_HISTORY", {
+        en: "LIVE_MATKA_GAME_GAME_HISTORY",
         data: { filter: false },
       });
     }
@@ -324,8 +401,8 @@ function HeaderPart({
     setShowModal(true);
   };
 
-  const last7DaysResults = getLast7DaysResultHistory(lastWinCards);
-  const last7DaysUserHistory = getLast7DaysGameHistory(gameList, bets);
+  const last7DaysResults = getResultHistoryFromGameList(gameList);
+  const myGameHistory = getMyGameHistory(gameList);
 
   return (
     <>
@@ -418,7 +495,9 @@ function HeaderPart({
                     if (!type) return "";
                     return type
                       .split("-")
-                      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                      .map(
+                        (word) => word.charAt(0).toUpperCase() + word.slice(1),
+                      )
                       .join(" ");
                   };
 
@@ -429,7 +508,9 @@ function HeaderPart({
                           {displayAmount}
                         </div>
                         <span style={{ fontSize: "0.65rem" }}>
-                          <strong>{bet.number}</strong> ({formatGameType(bet.gameType)} - {bet.market?.toUpperCase()})
+                          <strong>{bet.number}</strong> (
+                          {formatGameType(bet.gameType)} -{" "}
+                          {bet.market?.toUpperCase()})
                         </span>
                       </div>
                       <button
@@ -477,20 +558,20 @@ function HeaderPart({
 
             {/* Toggle Tabs */}
             <div className="history-tabs-container">
-              <button
+              {/* <button
                 type="button"
                 className={`history-tab-btn ${activeTab === "result" ? "active" : ""}`}
                 onClick={() => setActiveTab("result")}
               >
                 Result History
-              </button>
-              <button
+              </button> */}
+              {/* <button
                 type="button"
                 className={`history-tab-btn ${activeTab === "game" ? "active" : ""}`}
                 onClick={() => setActiveTab("game")}
               >
                 My Game History
-              </button>
+              </button> */}
             </div>
 
             {/* Tab Contents */}
@@ -511,16 +592,152 @@ function HeaderPart({
                     </div>
                   </div>
                 ))
+              ) : myGameHistory.length === 0 ? (
+                <div className="history-item-card">
+                  <div className="history-game-text">No game history found</div>
+                </div>
               ) : (
-                last7DaysUserHistory.map((item, idx) => (
-                  <div className="history-item-card" key={`game-hist-${idx}`}>
-                    <div className="history-item-date">{item.date}</div>
+                myGameHistory.map((item, idx) => (
+                  <div
+                    className="history-item-card"
+                    key={`game-hist-${item.ticketId}-${idx}`}
+                  >
+                    <div className="history-item-date flex justify-between">
+                      <div>
+                        {item.date} &nbsp; {item.time}
+                      </div>
+                      <div>
+                        <strong>Bet:</strong>{" "}
+                        <span>₹{item.betAmount.toLocaleString()}</span>
+                      </div>
+                    </div>
+
                     <div className="history-game-text">
-                      Played {item.bets} bets. Total stake:{" "}
-                      <strong>₹{item.stake.toLocaleString()}</strong>
+                      <div className="flex justify-between">
+                        <div>
+                          <strong>Ticket:</strong> {item.ticketId}
+                        </div>
+                        <div>
+                          <strong>Win:</strong>{" "}
+                          <span>₹{item.winAmount.toLocaleString()}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex justify-between">
+                        <div>
+                          <strong>Game:</strong> {item.gameId}
+                        </div>
+                        <div>
+                          <strong>Result:</strong>{" "}
+                          <span>{item.resultCard}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex justify-end">
+                        <button
+                          type="button"
+                          className="history-view-btn"
+                          onClick={() => {
+                            setSelectedGame(item);
+                            setShowCardDetails(true);
+                          }}
+                        >
+                          View
+                        </button>
+                      </div>
+
+                      <div></div>
                     </div>
                   </div>
                 ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showCardDetails && selectedGame && (
+        <div
+          className="history-modal-overlay"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowCardDetails(false);
+              setSelectedGame(null);
+            }
+          }}
+        >
+          <div className="history-modal-card card-details-card">
+            <button
+              type="button"
+              className="history-modal-close"
+              onClick={() => {
+                setShowCardDetails(false);
+                setSelectedGame(null);
+              }}
+              title="Close"
+            >
+              &times;
+            </button>
+
+            <h3 className="history-modal-title">Bet Details</h3>
+
+            <div className="card-details-info">
+              <div className="card-details-info-row">
+                <strong>Ticket</strong>
+                <strong>{selectedGame.ticketId}</strong>
+              </div>
+
+              <div className="card-details-info-row">
+                <strong>Game</strong>
+                <strong>{selectedGame.gameId}</strong>
+              </div>
+
+              <div className="card-details-info-row">
+                <strong>Result</strong>
+                <strong>{selectedGame.resultCard}</strong>
+              </div>
+
+              <div className="card-details-info-row">
+                <strong>Total Bet</strong>
+                <strong>₹{selectedGame.betAmount.toLocaleString()}</strong>
+              </div>
+
+              <div className="card-details-info-row">
+                <strong>Total Win</strong>
+                <strong>₹{selectedGame.winAmount.toLocaleString()}</strong>
+              </div>
+            </div>
+
+            <div className="card-details-list">
+              {Object.entries(selectedGame.cardDetails || {}).map(
+                ([gameType, numbers]) => (
+                  <div className="card-details-section" key={gameType}>
+                    <div className="card-details-game-type">
+                      {gameType
+                        .split("_")
+                        .map(
+                          (word) =>
+                            word.charAt(0).toUpperCase() + word.slice(1),
+                        )
+                        .join(" ")}
+                    </div>
+
+                    <div className="card-details-numbers">
+                      {Object.entries(numbers || {}).map(([number, amount]) => (
+                        <div
+                          className="card-detail-row"
+                          key={`${gameType}-${number}`}
+                        >
+                          <span className="card-detail-number">{number}</span>
+
+                          <span className="card-detail-amount">
+                            ₹{Number(amount || 0).toLocaleString()}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ),
               )}
             </div>
           </div>

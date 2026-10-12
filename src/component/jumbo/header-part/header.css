@@ -32,6 +32,95 @@
   font-weight: 700;
 }
 
+.card-details-card {
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+.history-view-btn {
+  margin-top: 8px;
+  padding: 5px 14px;
+  border: none;
+  border-radius: 5px;
+  background: #f0b90b;
+  color: #000;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.history-view-btn:hover {
+  opacity: 0.9;
+}
+
+.card-details-info {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-bottom: 12px;
+}
+
+.card-details-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px;
+  border-radius: 6px;
+  background: #FFC107;
+  font-size: 13px;
+}
+
+.card-details-info-row span {
+  color: #000;
+}
+
+.card-details-info-row strong {
+  text-align: right;
+  word-break: break-word;
+}
+
+.card-details-section {
+  margin-top: 10px;
+  border: 1px solid #FFC107;
+  border-radius: 7px;
+  overflow: hidden;
+}
+
+.card-details-game-type {
+  padding: 8px 10px;
+  background: #FFC107;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.card-details-numbers {
+  padding: 5px 10px;
+}
+
+.card-detail-row {
+  display: flex;
+  justify-content: space-between;
+  color: #fff;
+  align-items: center;
+  padding: 7px 0;
+  border-bottom: 1px solid #FFC107;
+  font-size: 13px;
+}
+
+.card-detail-row:last-child {
+  border-bottom: none;
+}
+
+.card-detail-number {
+  font-weight: 600;
+}
+
+.card-detail-amount {
+  font-weight: 700;
+}
+
 /* ==========================================
    HISTORY (LAST 7 DAYS) MODAL
    ========================================== */

@@ -507,6 +507,41 @@ html {
     backdrop-filter: blur(5px);
 }
 
+.how-to-play-modal {
+  width: 90%;
+  max-width: 420px;
+  padding: 20px;
+}
+
+.win-x-table {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.win-x-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 16px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.win-x-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.win-x-value {
+  font-size: 17px;
+  font-weight: 700;
+  color: #ffd700;
+}
+
 .betting-tabs {
     display: flex;
     gap: 5px;
@@ -1252,6 +1287,14 @@ html {
         padding: 5px 8px;
         font-size: 0.8rem;
     }
+
+    .filter-btn {
+        font-size: 0.50rem;
+    }
+
+    .filter-btn.active {
+        font-size: 0.50rem;
+    }
 }
 
 /* Small Tablet */
@@ -1298,6 +1341,11 @@ html {
     .balance-box {
         font-size: 0.8rem;
         padding: 5px 8px;
+    }
+
+
+    .filter-btn.active {
+        font-size: 0.75rem;
     }
 }
 
@@ -1611,6 +1659,10 @@ html {
     .draw-jodi-display {
         font-size: 1.15rem;
         gap: 5px;
+    }
+
+    .filter-btn.active {
+        font-size: 0.70rem;
     }
 }
 
@@ -2014,3 +2066,134 @@ html {
         font-size: 21px;
     }
 }
+
+.rules-history-buttons {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+.rules-history-buttons .filter-btn {
+  flex: 1;
+  width: 50%;
+}
+
+.result-history-modal {
+  width: 95%;
+  max-width: 1400px;
+  max-height: 90vh;
+  overflow: hidden;
+}
+
+.result-history-scroll {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: 75vh;
+  margin-top: 12px;
+}
+
+.result-history-table {
+  width: 100%;
+  min-width: 900px;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.result-history-table th {
+  background: #ffc107;
+  color: #000;
+  border: 1px solid #3d5ab9;
+  padding: 8px 4px;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.result-history-table td {
+  background: #f7c98f;
+  border: 1px solid #3d5ab9;
+  vertical-align: top;
+  padding: 5px;
+}
+
+.result-history-day-cell {
+  width: 14.28%;
+}
+
+.result-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.result-history-tile {
+  background: #ffd49f;
+  border: 1px solid #d39a55;
+  border-radius: 4px;
+  padding: 5px 3px;
+  text-align: center;
+}
+
+.result-history-slot {
+  color: #000;
+  font-size: 9px;
+  line-height: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.result-history-result {
+  margin-top: 3px;
+  color: #000;
+  font-size: 17px;
+  line-height: 20px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+.result-history-no-data {
+  text-align: center;
+  color: #777;
+  padding: 20px 5px;
+  font-weight: 600;
+}
+
+.result-history-loading {
+  text-align: center;
+  padding: 40px 10px;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.result-history-empty {
+  text-align: center;
+  padding: 40px 10px;
+  color: #fff;
+  font-size: 16px;
+}
+
+@media (max-width: 768px) {
+  .result-history-modal {
+    width: 98%;
+  }
+
+  .result-history-table {
+    min-width: 700px;
+  }
+
+  .result-history-table th {
+    font-size: 13px;
+  }
+
+  .result-history-result {
+    font-size: 14px;
+  }
+
+  .result-history-slot {
+    font-size: 8px;
+  }
+}
+
