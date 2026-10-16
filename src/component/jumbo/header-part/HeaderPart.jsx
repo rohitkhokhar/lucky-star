@@ -412,7 +412,7 @@ function HeaderPart({
             <i className="fas fa-arrow-left"></i>
           </button>
           <div className="table-info">
-            <span className="table-name">TABLE 1 : MIN BET 10</span>
+            <span className="table-name">TABLE 1 :</span>
           </div>
         </div>
 

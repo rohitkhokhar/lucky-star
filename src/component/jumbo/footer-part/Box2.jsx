@@ -10,6 +10,7 @@
   } from "../../../redux/betSlice";
   import { getSocket } from "../../../signals/socketConnection";
   import cardImages from "../../../assets/cards";
+  import downArrow from "../../../assets/down-arrow.png";
 
   // Helper function to format seconds into mm:ss
   const formatTime = (totalSeconds) => {
@@ -78,6 +79,7 @@
     const [singleFilter, setSingleFilter] = useState("all");
     const [jodiFilter, setJodiFilter] = useState("all");
     const [pattiFilter, setPattiFilter] = useState("all");
+    const [showDealerCards, setShowDealerCards] = useState(true);
 
     const reduxBets = reduxBetState.bets || propBets || {};
     const [gridBets, setGridBets] = useState({});
@@ -777,7 +779,7 @@ const handleNumberClick = (number) => {
         DEALER CARDS & TIMERS (OPEN & CLOSE)
     ====================================== */}
 
-        <div className="dealer-cards-wrapper">
+        {showDealerCards && <div className="dealer-cards-wrapper">
           {/* OPEN TIMER (Before dealer-cards div) */}
           <div
             className={`matka-timer open-timer ${currentMarketType === "open" ? "active-market" : ""} ${isOpenRunning ? "timer-running" : "timer-stopped"}`}
@@ -900,14 +902,14 @@ const handleNumberClick = (number) => {
               <span className="timer-digits">{formatTime(closeSeconds)}</span>
             </div>
           </div>
-        </div>
+        </div>}
 
         {/* ======================================
         BETTING PANEL
     ====================================== */}
 
         <div
-          className={`betting-panel mt-2 ${isGameDisabled ? "game-disabled" : ""}`}
+          className={`betting-panel mt-2 relative ${isGameDisabled ? "game-disabled" : ""}`}
           style={
             isGameDisabled
               ? {
@@ -935,6 +937,32 @@ const handleNumberClick = (number) => {
                 {tab.label}
               </button>
             ))}
+          </div>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              position: "absolute",
+              right: "10px",
+              top: "10px",
+            }}
+          >
+            <button
+              type="button"
+              className="expand-btn"
+              onClick={() => setShowDealerCards((prev) => !prev)}
+            >
+              <img
+                src={downArrow}
+                alt="Toggle Dealer Cards"
+                style={{
+                  width: "16px",
+                  height: "12px",
+                  transform: showDealerCards ? "rotate(0deg)" : "rotate(180deg)",
+                  transition: "transform 0.3s ease",
+                }}
+              />
+            </button>
           </div>
 
           {/* ==================================

@@ -668,7 +668,7 @@ function Box3({
         &times;
       </span>
 
-      <h5 className="draw-modal-title">BET LIMIT</h5>
+      <h5 className="draw-modal-title">MAX PER NUMBER BET LIMIT</h5>
 
       <div className="win-x-table">
         {[
@@ -682,10 +682,6 @@ function Box3({
             <span>{item.label}</span>
 
             <strong>
-              ₹{Number(
-                data?.min_max_config?.min ?? 10
-              ).toLocaleString("en-IN")}
-              {" - "}
               ₹{Number(
                 data?.bet_limit_configs?.[item.key] ?? 0
               ).toLocaleString("en-IN")}
